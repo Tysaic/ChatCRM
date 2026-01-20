@@ -73,7 +73,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'ChatCRM.wsgi.application'
-ASGI_APPLICATION = 'server.asgi.application'
+ASGI_APPLICATION = 'ChatCRM.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -92,7 +92,8 @@ CHANNEL_LAYERS = {
 }
 
 CORS_ALLOWED_ORIGINS = [
-    "*" # Se debe eliminar ya que es inseguro Cambiar al tener el attachment
+    "http://localhost",
+    "https://localhost" # Se debe eliminar ya que es inseguro Cambiar al tener el attachment
 ]
 
 
@@ -147,6 +148,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=30),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=30)
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1)
 }
