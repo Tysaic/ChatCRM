@@ -61,8 +61,8 @@ class SignupSerializer(serializers.ModelSerializer):
 
         user.set_password(validated_data['password'])
         user.save()
-        ChatRoom = ChatRoom.objects.create(
+        chatRoom = ChatRoom.objects.create(
             type="SELF", name=user.first_name + user.last_name
         )
-        ChatRoom.member.add(user.id)
+        chatRoom.member.add(user.id)
         return user
