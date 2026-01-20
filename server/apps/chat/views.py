@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.generics import ListAPIView
 from rest_framework.pagination import LimitOffsetPagination
-from apps.chat.serializers import ChatRoomSerializer, ChatMessageSerializer
-from apps.chat.models import ChatRoom, ChatMessage
+from .serializers import ChatRoomSerializer, ChatMessageSerializer
+from .models import ChatRoom, ChatMessage
 
 class ChatRoomView(APIView):
     def get(self, request, userId):

@@ -2,8 +2,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny
-from apps.user.models import User
-from apps.user.serializers import (
+from .models import User
+from .serializers import (
     UserSerializer, LoginSerializer, SignupSerializer
 )
 
