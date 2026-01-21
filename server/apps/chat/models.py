@@ -13,7 +13,7 @@ class ChatRoom(models.Model):
 
 class ChatMessage(models.Model):
 
-    chat = models.ForeignKey(ChatRoom, on_delete=models.SET_NULL, null=True)
+    room = models.ForeignKey(ChatRoom, on_delete=models.SET_NULL, null=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     message = models.TextField(default=' ')
     timestamp = models.DateTimeField(auto_now_add=True)
