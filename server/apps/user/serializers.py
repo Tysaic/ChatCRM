@@ -5,7 +5,8 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from apps.user.models import User
 from apps.chat.models import ChatRoom
-
+from django.contrib.auth import authenticate
+from django.utils.translation import gettext_lazy as lazy
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -13,6 +14,49 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'image', 'first_name', 'last_name']
 
 class LoginSerializer(TokenObtainPairSerializer):
+    
+    def validate(self, attrs):
+        username_or_email = attrs.get("username")
+        password = attrs.get("password")
+
+        # Checking if username or email value
+
+        if '@' in username_or_email:
+            try:
+                user_obj = User.objects.get(email=username_or_email)
+                username_or_email = user_obj.username
+            except User.DoesNotExist:
+                raise serializers.ValidationError(lazy("Invalid credentials."), code="authorization")
+
+        # Verify credentials
+        user = authenticate(
+            request = self.context.get('request'),
+            username=username_or_email, 
+            password=password
+        )
+
+        if not user:
+            raise serializers.ValidationError(
+                lazy("Invalid credentials."),
+                code="authorization"
+            )
+        
+        if not user.is_active:
+            raise serializers.ValidationError(
+                lazy("User account is disabled."),
+                code="authorization"
+            )
+        
+        # Getting token
+
+        refresh = self.get_token(user)
+
+        return {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'userId': user.userId,
+        }
+
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
@@ -33,13 +77,17 @@ class SignupSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'first_name', 'last_name', 'email', 'password', 'passwordTwo'
+            'first_name', 'last_name', 'username',
+            'email', 'password', 'passwordTwo', 
+            'image'
         )
         extra_kwargs = {
             'first_name' : {'required': True},
             'last_name' : {'required': True},
+            'username': {'required': True},
             'email': {'required': True},
-            'password': {'required': True}
+            'password': {'required': True},
+            'image': {'required': False}
         }
     
     def validate(self, attrs):
@@ -52,11 +100,11 @@ class SignupSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def create(self, validated_data):
         user = User.objects.create(
-            username = validated_data['email'],
+            username = validated_data['username'],
             email = validated_data['email'],
             first_name = validated_data['first_name'],
             last_name = validated_data['last_name'],
-            image = validated_data['image']
+            image = validated_data.get('image', None)
         )
 
         user.set_password(validated_data['password'])
@@ -66,3 +114,11 @@ class SignupSerializer(serializers.ModelSerializer):
         )
         chatRoom.member.add(user.id)
         return user
+    
+    def to_representation(self,instance):
+
+        return {
+            'id': instance.id,
+            'userId': instance.userId,
+            'message': 'User registered successfully'
+        }

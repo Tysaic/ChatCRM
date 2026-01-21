@@ -20,11 +20,30 @@ class ChatRoomSerializer(serializers.ModelSerializer):
     
 class ChatMessageSerializer(serializers.ModelSerializer):
     userName = serializers.SerializerMethodField()
-    userImage = serializers.ImageField(source='user.image')
+    userImage = serializers.SerializerMethodField()
+    roomId = serializers.CharField(write_only=True)
 
     class Meta:
+
         model = ChatMessage
-        exclude = ['id', 'chat']
+        fields = ['roomId', 'user', 'message', 'timestamp', 'userName', 'userImage']
+        read_only_fields = ['messageId', 'timestamp', 'userName', 'userImage']
+
     
-    def get_userName(self, Obj):
-        return Obj.user.first_name + ' ' + Obj.user.last_name
+    def get_userName(self, obj):
+        if obj.user:
+            return f"{obj.user.first_name} - {obj.user.last_name}"
+        return "User not found"
+    
+    def get_userImage(self, obj):
+        if obj.user and obj.user.image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.user.image.url)
+            return obj.user.image.url
+        return None
+    
+    def validate_roomId(self, value):
+        if not ChatRoom.objects.filter(roomId=value).exists():
+            raise serializers.ValidationError("Chat room with this id doesnt exists")
+        return value

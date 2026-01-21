@@ -31,7 +31,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         userObj = User.objects.get(id=userId)
         chatObj = ChatRoom.objects.get(roomId=roomId)
         ChatMessageObj = ChatMessage.objects.create(
-            chat=chatObj, user=userObj, message=message
+            room=chatObj, user=userObj, message=message
         )
 
         return {
