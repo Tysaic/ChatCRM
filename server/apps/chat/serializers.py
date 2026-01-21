@@ -10,9 +10,9 @@ class ChatRoomSerializer(serializers.ModelSerializer):
     def create(self, validatedData):
 
         memberObject = validatedData.pop('members')
-        chatRoom = chatRoom.objects.create(**validatedData)
-        chatRoom.member.set(memberObject)
-        return ChatRoom
+        chat_room = ChatRoom.objects.create(**validatedData)
+        chat_room.member.set(memberObject)
+        return chat_room
     
     class Meta:
         model = ChatRoom
