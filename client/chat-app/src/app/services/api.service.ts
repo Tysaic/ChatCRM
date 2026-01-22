@@ -1,17 +1,71 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
+import { LoginRequest, LoginResponse, SignUpRequest, SignUpResponse } from '../models/auth.model';
+import { User } from '../models/user.model';
+
 
 @Injectable({
   providedIn: 'root'
 })
+
 export class ApiService {
   private apiUrl = environment.apiUrl;
+  private isAuthenticated = new BehaviorSubject<boolean>(this.hasToken());
 
   constructor(private http: HttpClient) {}
 
-  private getHeaders(): HttpHeaders {
+  // ========== AUTH ==========
+
+  login(credentials: LoginRequest): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/v1/login`, credentials)
+    .pipe(
+      tap(response => {
+        localStorage.setItem('access_token', response.access);
+        localStorage.setItem('refresh_token', response.refresh);
+        localStorage.setItem('userId', response.userId);
+        this.isAuthenticated.next(true);
+      })
+    )
+  }
+
+  signup(userData: SignUpRequest): Observable<SignUpResponse> {
+    if(!userData.image){
+      return this.http.post<SignUpResponse>(`${this.apiUrl}/v1/signup`, userData);
+    }
+
+    const formData = new FormData();
+    formData.append('first_name', userData.first_name);
+    formData.append('last_name', userData.last_name);
+    formData.append('username', userData.username);
+    formData.append('email', userData.email);
+    formData.append('password', userData.password);
+    formData.append('passwordTwo', userData.passwordTwo);
+    formData.append('image', userData.image);
+
+    return this.http.post<SignUpResponse>(`${this.apiUrl}/v1/signup`, formData);
+  }
+
+  logout(): void {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('userId');
+    this.isAuthenticated.next(false);
+  }
+
+  isLoggedIn(): Observable<boolean> {
+    return this.isAuthenticated.asObservable();
+  }
+
+  private hasToken(): boolean {
+    return !!localStorage.getItem('access_token');
+  }
+
+  // ========== HEADERS ==========
+
+  private getAuthHeaders(): HttpHeaders {
     const token = localStorage.getItem('access_token');
     return new HttpHeaders({
       'Content-Type': 'application/json',
@@ -19,46 +73,60 @@ export class ApiService {
     });
   }
 
-  // Auth
-  login(username: string, password: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/token/`, { username, password });
+  // ========== CHATS ==========
+
+  getUserChats(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/users/chats`, {
+      headers: this.getAuthHeaders()
+    });
   }
 
-  register(userData: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register/`, userData);
+  createChat(name: string, type: string, members: number[]): Observable<any> {
+    return this.http.post(`${this.apiUrl}/v1/chats/create`, 
+      { name, type, members },
+      { headers: this.getAuthHeaders() }
+    );
   }
 
-  // Chats
-  getChats(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/chats/`, { headers: this.getHeaders() });
+  // ========== MESSAGES ==========
+
+  getMessages(roomId: string, limit = 30, offset = 0): Observable<any> {
+    return this.http.get(
+      `${this.apiUrl}/v1/chats/${roomId}?limit=${limit}&offset=${offset}`,
+      { headers: this.getAuthHeaders()}
+    );
   }
 
-  getChat(id: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/chats/${id}/`, { headers: this.getHeaders() });
-  }
-
-  // Messages
-  getMessages(chatId: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/chats/${chatId}/messages/`, { headers: this.getHeaders() });
-  }
-
-  sendMessage(chatId: number, content: string, image?: File): Observable<any> {
-    const formData = new FormData();
-    formData.append('content', content);
-    if (image) {
-      formData.append('image', image);
+  sendMessages(roomId: string, message: string, image?: File): Observable<any> {
+    if(!image){
+      return this.http.post(`${this.apiUrl}/chats/messages`,
+        { roomId, message },
+        { headers: this.getAuthHeaders() }
+      );
     }
 
+    const formData = new FormData();
+    formData.append('roomId', roomId);
+    formData.append('message', message);
+    formData.append('image', image);
+
     const token = localStorage.getItem('access_token');
-    const headers = new HttpHeaders({
+    const header = new HttpHeaders({
       'Authorization': token ? `Bearer ${token}` : ''
     });
 
-    return this.http.post(`${this.apiUrl}/chats/${chatId}/messages/`, formData, { headers });
+    return this.http.post(`${this.apiUrl}/chats/messages`, formData, { headers: header });
   }
 
-  // Contacts
-  getContacts(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/contacts/`, { headers: this.getHeaders() });
-  }
+   // ========== USERS ==========
+
+   getUsers(exclude?: number[]): Observable<any> {
+    let url = `${this.apiUrl}/users`;
+
+    if (exclude && exclude.length > 0) {
+      url += `?exclude=${exclude.join(',')}`;
+    }
+
+    return this.http.get(url, {headers: this.getAuthHeaders()});
+   }
 }

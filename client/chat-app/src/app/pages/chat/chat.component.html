@@ -1,0 +1,88 @@
+<div class="chat-container">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h3>ChatCRM</h3>
+      <button class="btn btn-sm btn-outline-light" (click)="logout()">
+        Salir
+      </button>
+    </div>
+
+    <div class="chat-list">
+      @for (chat of chats; track chat.roomId) {
+        <div
+          class="chat-item"
+          [class.active]="selectedChat?.roomId === chat.roomId"
+          (click)="selectChat(chat)"
+        >
+          <div class="chat-avatar">
+            @if (chat.member[0]?.image) {
+              <img [src]="chat.member[0].image" alt="Avatar">
+            } @else {
+              <div class="avatar-placeholder">
+                {{ getChatDisplayName(chat).charAt(0) }}
+              </div>
+            }
+          </div>
+          <div class="chat-info">
+            <span class="chat-name">{{ getChatDisplayName(chat) }}</span>
+            <span class="chat-type">{{ chat.type }}</span>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Chat Area -->
+  <div class="chat-area">
+    @if (selectedChat) {
+      <div class="chat-header">
+        <h4>{{ getChatDisplayName(selectedChat) }}</h4>
+      </div>
+
+      <div class="messages-container">
+        @for (msg of messages; track msg.timestamp) {
+          <div
+            class="message"
+            [class.own]="msg.user === currentUserId"
+          >
+            <div class="message-avatar">
+              @if (msg.userImage) {
+                <img [src]="msg.userImage" alt="Avatar">
+              } @else {
+                <div class="avatar-placeholder">{{ msg.userName.charAt(0) }}</div>
+              }
+            </div>
+            <div class="message-content">
+              <span class="message-author">{{ msg.userName }}</span>
+              <p class="message-text">{{ msg.message }}</p>
+              @if (msg.image) {
+                <img [src]="msg.image" class="message-image" alt="Imagen">
+              }
+              <span class="message-time">
+                {{ msg.timestamp | date:'short' }}
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="message-input">
+        <input
+          type="text"
+          [(ngModel)]="newMessage"
+          (keyup.enter)="sendMessage()"
+          placeholder="Escribe un mensaje..."
+          class="form-control"
+        >
+        <button class="btn btn-primary" (click)="sendMessage()">
+          Enviar
+        </button>
+      </div>
+    } @else {
+      <div class="no-chat-selected">
+        <p>Selecciona un chat para comenzar</p>
+      </div>
+    }
+  </div>
+</div>
