@@ -11,7 +11,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
 class ChatRoomListView(APIView):
-    #permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
 
@@ -25,7 +25,7 @@ class ChatRoomListView(APIView):
         return Response(serializer.data, status = status.HTTP_200_OK)
 
 class ChatRoomCreateView(APIView):
-    #permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def post(self, request):
 
         data = request.data.copy()
@@ -51,7 +51,7 @@ class ChatRoomCreateView(APIView):
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
 class UserChatRoomView(APIView):
-    #permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request):
 
         chatRooms = ChatRoom.objects.filter(
@@ -67,7 +67,7 @@ class UserChatRoomView(APIView):
 class MessagesView(ListAPIView):
     serializer_class = ChatMessageSerializer
     pagination_class = LimitOffsetPagination 
-    #permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
 

@@ -1,7 +1,7 @@
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import User
 from .serializers import (
     UserSerializer, LoginSerializer, SignupSerializer
@@ -12,6 +12,7 @@ class UserView(ListAPIView):
     queryset = User.objects.all().order_by('first_name')
     serializer_class = UserSerializer
     pagination_class = LimitOffsetPagination
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         excludeUserArr = []
@@ -29,7 +30,7 @@ class UserView(ListAPIView):
     
 
 class LoginApiView(TokenObtainPairView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     serializer_class = LoginSerializer
 
 class SignupApiView(CreateAPIView):
