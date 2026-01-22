@@ -83,8 +83,8 @@ CHANNEL_LAYERS = {
 }
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost",
-    "https://localhost" # Se debe eliminar ya que es inseguro Cambiar al tener el attachment
+    "http://localhost:4200",
+    "https://localhost:4200" # Se debe eliminar ya que es inseguro Cambiar al tener el attachment
 ]
 
 

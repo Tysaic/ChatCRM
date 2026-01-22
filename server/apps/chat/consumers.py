@@ -61,7 +61,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.userId = self.scope['url_route']['kwargs']['userId']
         self.userRooms = await database_sync_to_async(
             list
-        )(ChatRoom.objects.filter(member=self.userId))
+        )(ChatRoom.objects.filter(member=self.user))
 
         for room in self.userRooms:
 

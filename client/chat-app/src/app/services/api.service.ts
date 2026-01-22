@@ -76,7 +76,7 @@ export class ApiService {
   // ========== CHATS ==========
 
   getUserChats(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/users/chats`, {
+    return this.http.get(`${this.apiUrl}/v1/user/chats`, {
       headers: this.getAuthHeaders()
     });
   }
@@ -92,7 +92,7 @@ export class ApiService {
 
   getMessages(roomId: string, limit = 30, offset = 0): Observable<any> {
     return this.http.get(
-      `${this.apiUrl}/v1/chats/${roomId}?limit=${limit}&offset=${offset}`,
+      `${this.apiUrl}/v1/chats/messages/  ${roomId}?limit=${limit}&offset=${offset}`,
       { headers: this.getAuthHeaders()}
     );
   }

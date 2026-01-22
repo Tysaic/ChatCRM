@@ -120,7 +120,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
 
     getChatDisplayName(chat: ChatRoom): string {
-        if (chat.type === 'SELF') return 'Personal Chat';
+        //if (chat.type === 'SELF') return 'Personal Chat';
         if (chat.name) return chat.name;
 
         const otherMember = chat.member.find(m => m.id !== this.currentUserId);

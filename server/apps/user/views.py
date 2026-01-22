@@ -12,7 +12,7 @@ class UserView(ListAPIView):
     queryset = User.objects.all().order_by('first_name')
     serializer_class = UserSerializer
     pagination_class = LimitOffsetPagination
-    permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         excludeUserArr = []
@@ -30,7 +30,7 @@ class UserView(ListAPIView):
     
 
 class LoginApiView(TokenObtainPairView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     serializer_class = LoginSerializer
 
 class SignupApiView(CreateAPIView):
