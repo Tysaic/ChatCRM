@@ -102,7 +102,8 @@ class MessagesView(ListAPIView):
                 status = status.HTTP_403_FORBIDDEN
             )
         
-        message = serializer.save(user = user_instance, room=chatroom)
+        image = request.FILES.get('image', None)
+        message = serializer.save(user = user_instance, room=chatroom, image=image)
 
         response_serializer = self.get_serializer(message)
 

@@ -22,11 +22,12 @@ class ChatMessageSerializer(serializers.ModelSerializer):
     userName = serializers.SerializerMethodField()
     userImage = serializers.SerializerMethodField()
     roomId = serializers.CharField(write_only=True)
+    image = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
 
         model = ChatMessage
-        fields = ['roomId', 'user', 'message', 'timestamp', 'userName', 'userImage']
+        fields = ['roomId', 'user', 'message', 'timestamp', 'userName', 'userImage', 'image']
         read_only_fields = ['messageId', 'timestamp', 'userName', 'userImage']
 
     
