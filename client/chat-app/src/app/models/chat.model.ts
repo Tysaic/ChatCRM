@@ -1,11 +1,4 @@
-export interface User {
-  id: number;
-  username: string;
-  email: string;
-  first_name?: string;
-  last_name?: string;
-  avatar?: string;
-}
+import { User } from './user.model';
 
 export interface Message {
   id: number;
