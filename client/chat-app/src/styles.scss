@@ -1,1 +1,59 @@
-/* You can add global styles to this file, and also import other style files */
+/*
+ * ChatCRM - Global Styles
+ * Based on Chatvia v2.6.0 Template
+ */
+
+// ==========================================================================
+// 1. FONTS
+// ==========================================================================
+@import 'styles/fonts/fonts';
+
+// ==========================================================================
+// 2. BOOTSTRAP CORE (Functions, Variables, Mixins)
+// ==========================================================================
+@import '../node_modules/bootstrap/scss/functions';
+@import '../node_modules/bootstrap/scss/variables';
+@import 'styles/variables';
+@import 'styles/variables-dark';
+@import '../node_modules/bootstrap/scss/mixins';
+@import '../node_modules/bootstrap/scss/bootstrap';
+
+// ==========================================================================
+// 3. COMPONENTS (UI Elements)
+// ==========================================================================
+@import 'styles/components/root';
+@import 'styles/components/reboot';
+@import 'styles/components/waves';
+@import 'styles/components/avatar';
+@import 'styles/components/helper';
+@import 'styles/components/accordion';
+@import 'styles/components/backgrounds';
+@import 'styles/components/badge';
+@import 'styles/components/breadcrumb';
+@import 'styles/components/buttons';
+@import 'styles/components/card';
+@import 'styles/components/dropdown';
+@import 'styles/components/forms';
+@import 'styles/components/nav';
+@import 'styles/components/pagination';
+@import 'styles/components/progress';
+@import 'styles/components/table';
+
+// ==========================================================================
+// 4. PLUGINS
+// ==========================================================================
+@import 'styles/plugins/custom-scrollbar';
+@import 'styles/plugins/icons';
+
+// ==========================================================================
+// 5. STRUCTURE
+// ==========================================================================
+@import 'styles/structure/sidemenu';
+
+// ==========================================================================
+// 6. PAGES
+// ==========================================================================
+@import 'styles/pages/chat-leftsidebar';
+@import 'styles/pages/user-chat';
+@import 'styles/pages/user-profile-details';
+@import 'styles/pages/authentication';

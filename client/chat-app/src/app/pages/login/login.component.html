@@ -1,47 +1,95 @@
-<div class="login-container">
-  <div class="login-card">
-    <h2>Iniciar Sesion</h2>
+<div class="account-pages my-5 pt-sm-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6 col-xl-5">
+                <div class="text-center mb-4">
+                    <a routerLink="/" class="auth-logo mb-5 d-block">
+                        <img src="assets/images/logo-dark.png" alt="" height="30" class="logo logo-dark">
+                        <img src="assets/images/logo-light.png" alt="" height="30" class="logo logo-light">
+                    </a>
 
-    <form (ngSubmit)="onSubmit()">
-      <div class="form-group">
-        <label for="username">Usuario o Email</label>
-        <input
-          type="text"
-          id="username"
-          [(ngModel)]="username"
-          name="username"
-          class="form-control"
-          placeholder="usuario@ejemplo.com"
-        >
-      </div>
+                    <h4>Iniciar Sesion</h4>
+                    <p class="text-muted mb-4">Inicia sesion para continuar en ChatCRM.</p>
+                </div>
 
-      <div class="form-group">
-        <label for="password">Contrasena</label>
-        <input
-          type="password"
-          id="password"
-          [(ngModel)]="password"
-          name="password"
-          class="form-control"
-          placeholder="********"
-        >
-      </div>
+                <div class="card">
+                    <div class="card-body p-4">
+                        <div class="p-3">
+                            <form (ngSubmit)="onSubmit()">
 
-      @if (error) {
-        <div class="alert alert-danger">{{ error }}</div>
-      }
+                                <div class="mb-3">
+                                    <label class="form-label">Usuario</label>
+                                    <div class="input-group mb-3 bg-light-subtle rounded-3">
+                                        <span class="input-group-text text-muted" id="basic-addon3">
+                                            <i class="ri-user-2-line"></i>
+                                        </span>
+                                        <input
+                                            type="text"
+                                            class="form-control form-control-lg border-light bg-light-subtle"
+                                            placeholder="Ingresa tu usuario"
+                                            [(ngModel)]="username"
+                                            name="username"
+                                            aria-label="Ingresa tu usuario"
+                                            aria-describedby="basic-addon3"
+                                        >
+                                    </div>
+                                </div>
 
-      <button
-        type="submit"
-        class="btn btn-primary w-100"
-        [disabled]="loading"
-      >
-        {{ loading ? 'Cargando...' : 'Iniciar Sesion' }}
-      </button>
-    </form>
+                                <div class="mb-4">
+                                    <div class="float-end">
+                                        <a href="#" class="text-muted font-size-13">Olvidaste tu contrasena?</a>
+                                    </div>
+                                    <label class="form-label">Contrasena</label>
+                                    <div class="input-group mb-3 bg-light-subtle rounded-3">
+                                        <span class="input-group-text text-muted" id="basic-addon4">
+                                            <i class="ri-lock-2-line"></i>
+                                        </span>
+                                        <input
+                                            type="password"
+                                            class="form-control form-control-lg border-light bg-light-subtle"
+                                            placeholder="Ingresa tu contrasena"
+                                            [(ngModel)]="password"
+                                            name="password"
+                                            aria-label="Ingresa tu contrasena"
+                                            aria-describedby="basic-addon4"
+                                        >
+                                    </div>
+                                </div>
 
-    <p class="mt-3 text-center">
-      No tienes cuenta? <a routerLink="/signup">Registrarse</a>
-    </p>
-  </div>
+                                @if (error) {
+                                    <div class="alert alert-danger">{{ error }}</div>
+                                }
+
+                                <div class="form-check mb-4">
+                                    <input type="checkbox" class="form-check-input" id="remember-check">
+                                    <label class="form-check-label" for="remember-check">Recordarme</label>
+                                </div>
+
+                                <div class="d-grid">
+                                    <button
+                                        class="btn btn-primary waves-effect waves-light"
+                                        type="submit"
+                                        [disabled]="loading"
+                                    >
+                                        @if (loading) {
+                                            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                            Cargando...
+                                        } @else {
+                                            Iniciar Sesion
+                                        }
+                                    </button>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-5 text-center">
+                    <p>No tienes cuenta? <a routerLink="/signup" class="fw-medium text-primary">Registrate ahora</a></p>
+                    <p>© 2024 ChatCRM. Desarrollado con <i class="mdi mdi-heart text-danger"></i></p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

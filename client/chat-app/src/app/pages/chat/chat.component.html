@@ -1,88 +1,303 @@
-<div class="chat-container">
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="sidebar-header">
-      <h3>Vox</h3>
-      <button class="btn btn-sm btn-outline-light" (click)="logout()">
-        Salir
-      </button>
-    </div>
+<div class="layout-wrapper d-lg-flex">
 
-    <div class="chat-list">
-      @for (chat of chats; track chat.roomId) {
-        <div
-          class="chat-item"
-          [class.active]="selectedChat?.roomId === chat.roomId"
-          (click)="selectChat(chat)"
-        >
-          <div class="chat-avatar">
-            @if (chat.member[0]?.image) {
-              <img [src]="chat.member[0].image" alt="Avatar">
-            } @else {
-              <div class="avatar-placeholder">
-                {{ getChatDisplayName(chat).charAt(0) }}
-              </div>
-            }
-          </div>
-          <div class="chat-info">
-            <span class="chat-name">{{ getChatDisplayName(chat) }}</span>
-            <span class="chat-type">{{ chat.type }}</span>
-          </div>
+    <!-- Start left sidebar-menu -->
+    <div class="side-menu flex-lg-column me-lg-1 ms-lg-0">
+        <!-- LOGO -->
+        <div class="navbar-brand-box">
+            <a routerLink="/chat" class="logo logo-dark">
+                <span class="logo-sm">
+                    <img src="assets/images/logo.svg" alt="" height="30">
+                </span>
+            </a>
+            <a routerLink="/chat" class="logo logo-light">
+                <span class="logo-sm">
+                    <img src="assets/images/logo.svg" alt="" height="30">
+                </span>
+            </a>
         </div>
-      }
+
+        <!-- Side menu nav -->
+        <div class="flex-lg-column my-auto">
+            <ul class="nav nav-pills side-menu-nav justify-content-center" role="tablist">
+                <li class="nav-item" data-bs-toggle="tooltip" data-bs-placement="top" title="Chats">
+                    <a class="nav-link active" href="javascript:void(0);">
+                        <i class="ri-message-3-line"></i>
+                    </a>
+                </li>
+                <li class="nav-item" data-bs-toggle="tooltip" data-bs-placement="top" title="Contactos">
+                    <a class="nav-link" href="javascript:void(0);">
+                        <i class="ri-contacts-line"></i>
+                    </a>
+                </li>
+                <li class="nav-item" data-bs-toggle="tooltip" data-bs-placement="top" title="Configuracion">
+                    <a class="nav-link" href="javascript:void(0);">
+                        <i class="ri-settings-2-line"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="flex-lg-column d-none d-lg-block">
+            <ul class="nav side-menu-nav justify-content-center">
+                <li class="nav-item btn-group dropup profile-user-dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <img src="assets/images/users/avatar-1.jpg" alt="" class="profile-user rounded-circle">
+                    </a>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" href="#">Perfil <i class="ri-profile-line float-end text-muted"></i></a>
+                        <a class="dropdown-item" href="#">Configuracion <i class="ri-settings-3-line float-end text-muted"></i></a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" (click)="logout()" style="cursor: pointer;">Cerrar Sesion <i class="ri-logout-circle-r-line float-end text-muted"></i></a>
+                    </div>
+                </li>
+            </ul>
+        </div>
     </div>
-  </div>
+    <!-- end left sidebar-menu -->
 
-  <!-- Chat Area -->
-  <div class="chat-area">
-    @if (selectedChat) {
-      <div class="chat-header">
-        <h4>{{ getChatDisplayName(selectedChat) }}</h4>
-      </div>
+    <!-- start chat-leftsidebar -->
+    <div class="chat-leftsidebar me-lg-1 ms-lg-0">
+        <div class="tab-content">
+            <!-- Start chats tab-pane -->
+            <div class="tab-pane fade show active" id="pills-chat" role="tabpanel">
+                <div>
+                    <div class="px-4 pt-4">
+                        <h4 class="mb-4">Chats</h4>
+                        <div class="search-box chat-search-box">
+                            <div class="input-group mb-3 rounded-3">
+                                <span class="input-group-text text-muted bg-light pe-1 ps-3">
+                                    <i class="ri-search-line search-icon font-size-18"></i>
+                                </span>
+                                <input type="text" class="form-control bg-light" placeholder="Buscar chats...">
+                            </div>
+                        </div>
+                    </div>
 
-      <div class="messages-container">
-        @for (msg of messages; track msg.timestamp) {
-          <div
-            class="message"
-            [class.own]="msg.user === currentUserId"
-          >
-            <div class="message-avatar">
-              @if (msg.userImage) {
-                <img [src]="msg.userImage" alt="Avatar">
-              } @else {
-                <div class="avatar-placeholder">{{ msg.userName.charAt(0) }}</div>
-              }
+                    <!-- Start chat-message-list -->
+                    <div class="">
+                        <h5 class="mb-3 px-3 font-size-16">Recientes</h5>
+
+                        <div class="chat-message-list px-2" data-simplebar>
+                            <ul class="list-unstyled chat-list chat-user-list">
+                                @for (chat of chats; track chat.roomId) {
+                                    <li [class.active]="selectedChat?.roomId === chat.roomId" (click)="selectChat(chat)">
+                                        <a href="javascript:void(0);">
+                                            <div class="d-flex">
+                                                <div class="chat-user-img online align-self-center me-3 ms-0">
+                                                    @if (chat.member[0]?.image) {
+                                                        <img [src]="chat.member[0].image" class="rounded-circle avatar-xs" alt="">
+                                                    } @else {
+                                                        <div class="avatar-xs">
+                                                            <span class="avatar-title rounded-circle bg-primary-subtle text-primary">
+                                                                {{ getChatDisplayName(chat).charAt(0).toUpperCase() }}
+                                                            </span>
+                                                        </div>
+                                                    }
+                                                    <span class="user-status"></span>
+                                                </div>
+
+                                                <div class="flex-grow-1 overflow-hidden">
+                                                    <h5 class="text-truncate font-size-15 mb-1">{{ getChatDisplayName(chat) }}</h5>
+                                                    <p class="chat-user-message text-truncate mb-0">{{ chat.type }}</p>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- End chat-message-list -->
+                </div>
             </div>
-            <div class="message-content">
-              <span class="message-author">{{ msg.userName }}</span>
-              <p class="message-text">{{ msg.message }}</p>
-              @if (msg.image) {
-                <img [src]="msg.image" class="message-image" alt="Imagen">
-              }
-              <span class="message-time">
-                {{ msg.timestamp | date:'short' }}
-              </span>
+            <!-- End chats tab-pane -->
+        </div>
+    </div>
+    <!-- end chat-leftsidebar -->
+
+    <!-- Start User chat -->
+    <div class="user-chat w-100 overflow-hidden">
+        @if (selectedChat) {
+            <div class="d-lg-flex">
+                <!-- start chat conversation section -->
+                <div class="w-100 overflow-hidden position-relative">
+                    <!-- Chat header -->
+                    <div class="p-3 p-lg-4 border-bottom user-chat-topbar">
+                        <div class="row align-items-center">
+                            <div class="col-sm-4 col-8">
+                                <div class="d-flex align-items-center">
+                                    <div class="d-block d-lg-none me-2 ms-0">
+                                        <a href="javascript:void(0);" class="user-chat-remove text-muted font-size-16 p-2">
+                                            <i class="ri-arrow-left-s-line"></i>
+                                        </a>
+                                    </div>
+                                    <div class="me-3 ms-0">
+                                        @if (selectedChat.member[0]?.image) {
+                                            <img [src]="selectedChat.member[0].image" class="rounded-circle avatar-xs" alt="">
+                                        } @else {
+                                            <div class="avatar-xs">
+                                                <span class="avatar-title rounded-circle bg-primary-subtle text-primary">
+                                                    {{ getChatDisplayName(selectedChat).charAt(0).toUpperCase() }}
+                                                </span>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="flex-grow-1 overflow-hidden">
+                                        <h5 class="font-size-16 mb-0 text-truncate">
+                                            <a href="javascript:void(0);" class="text-reset user-profile-show">{{ getChatDisplayName(selectedChat) }}</a>
+                                            <i class="ri-record-circle-fill font-size-10 text-success d-inline-block ms-1"></i>
+                                        </h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-8 col-4">
+                                <ul class="list-inline user-chat-nav text-end mb-0">
+                                    <li class="list-inline-item">
+                                        <div class="dropdown">
+                                            <button class="btn nav-btn dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                <i class="ri-search-line"></i>
+                                            </button>
+                                            <div class="dropdown-menu p-0 dropdown-menu-end dropdown-menu-md">
+                                                <div class="search-box p-2">
+                                                    <input type="text" class="form-control bg-light border-0" placeholder="Buscar..">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="list-inline-item d-none d-lg-inline-block me-2 ms-0">
+                                        <button type="button" class="btn nav-btn">
+                                            <i class="ri-phone-line"></i>
+                                        </button>
+                                    </li>
+                                    <li class="list-inline-item d-none d-lg-inline-block me-2 ms-0">
+                                        <button type="button" class="btn nav-btn">
+                                            <i class="ri-vidicon-line"></i>
+                                        </button>
+                                    </li>
+                                    <li class="list-inline-item">
+                                        <div class="dropdown">
+                                            <button class="btn nav-btn dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                <i class="ri-more-fill"></i>
+                                            </button>
+                                            <div class="dropdown-menu dropdown-menu-end">
+                                                <a class="dropdown-item" href="#">Archivar <i class="ri-archive-line float-end text-muted"></i></a>
+                                                <a class="dropdown-item" href="#">Silenciar <i class="ri-volume-mute-line float-end text-muted"></i></a>
+                                                <a class="dropdown-item" href="#">Eliminar <i class="ri-delete-bin-line float-end text-muted"></i></a>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- end chat user head -->
+
+                    <!-- start chat conversation -->
+                    <div class="chat-conversation p-3 p-lg-4" data-simplebar>
+                        <ul class="list-unstyled mb-0">
+                            @for (msg of messages; track msg.timestamp) {
+                                <li [class.right]="msg.user === currentUserId">
+                                    <div class="conversation-list">
+                                        <div class="chat-avatar">
+                                            @if (msg.userImage) {
+                                                <img [src]="msg.userImage" alt="">
+                                            } @else {
+                                                <div class="avatar-xs">
+                                                    <span class="avatar-title rounded-circle bg-primary-subtle text-primary">
+                                                        {{ msg.userName?.charAt(0)?.toUpperCase() || 'U' }}
+                                                    </span>
+                                                </div>
+                                            }
+                                        </div>
+
+                                        <div class="user-chat-content">
+                                            <div class="ctext-wrap">
+                                                <div class="ctext-wrap-content">
+                                                    <p class="mb-0">{{ msg.message }}</p>
+                                                    @if (msg.image) {
+                                                        <img [src]="msg.image" class="rounded mt-2" style="max-width: 200px;" alt="Imagen">
+                                                    }
+                                                    <p class="chat-time mb-0">
+                                                        <i class="ri-time-line align-middle"></i>
+                                                        <span class="align-middle">{{ msg.timestamp | date:'HH:mm' }}</span>
+                                                    </p>
+                                                </div>
+                                                <div class="dropdown align-self-start">
+                                                    <a class="dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                                        <i class="ri-more-2-fill"></i>
+                                                    </a>
+                                                    <div class="dropdown-menu">
+                                                        <a class="dropdown-item" href="#">Copiar <i class="ri-file-copy-line float-end text-muted"></i></a>
+                                                        <a class="dropdown-item" href="#">Eliminar <i class="ri-delete-bin-line float-end text-muted"></i></a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="conversation-name">{{ msg.userName }}</div>
+                                        </div>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                    <!-- end chat conversation -->
+
+                    <!-- start chat input section -->
+                    <div class="chat-input-section p-3 p-lg-4 border-top mb-0">
+                        <div class="row g-0">
+                            <div class="col">
+                                <input
+                                    type="text"
+                                    class="form-control form-control-lg bg-light border-light"
+                                    placeholder="Escribe un mensaje..."
+                                    [(ngModel)]="newMessage"
+                                    (keyup.enter)="sendMessage()"
+                                >
+                            </div>
+                            <div class="col-auto">
+                                <div class="chat-input-links ms-md-2 me-md-0">
+                                    <ul class="list-inline mb-0">
+                                        <li class="list-inline-item" data-bs-toggle="tooltip" title="Emoji">
+                                            <button type="button" class="btn btn-link text-decoration-none font-size-16 btn-lg waves-effect">
+                                                <i class="ri-emotion-happy-line"></i>
+                                            </button>
+                                        </li>
+                                        <li class="list-inline-item" data-bs-toggle="tooltip" title="Adjuntar archivo">
+                                            <button type="button" class="btn btn-link text-decoration-none font-size-16 btn-lg waves-effect">
+                                                <i class="ri-attachment-line"></i>
+                                            </button>
+                                        </li>
+                                        <li class="list-inline-item">
+                                            <button
+                                                type="button"
+                                                class="btn btn-primary font-size-16 btn-lg chat-send waves-effect waves-light"
+                                                (click)="sendMessage()"
+                                            >
+                                                <i class="ri-send-plane-2-fill"></i>
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- end chat input section -->
+                </div>
+                <!-- end chat conversation section -->
             </div>
-          </div>
+        } @else {
+            <!-- No chat selected -->
+            <div class="d-flex justify-content-center align-items-center h-100">
+                <div class="text-center">
+                    <div class="avatar-lg mx-auto mb-4">
+                        <span class="avatar-title rounded-circle bg-primary-subtle text-primary font-size-24">
+                            <i class="ri-message-3-line"></i>
+                        </span>
+                    </div>
+                    <h5 class="text-muted">Selecciona un chat para comenzar</h5>
+                </div>
+            </div>
         }
-      </div>
+    </div>
+    <!-- end User chat -->
 
-      <div class="message-input">
-        <input
-          type="text"
-          [(ngModel)]="newMessage"
-          (keyup.enter)="sendMessage()"
-          placeholder="Escribe un mensaje..."
-          class="form-control"
-        >
-        <button class="btn btn-primary" (click)="sendMessage()">
-          Enviar
-        </button>
-      </div>
-    } @else {
-      <div class="no-chat-selected">
-        <p>Selecciona un chat para comenzar</p>
-      </div>
-    }
-  </div>
 </div>
