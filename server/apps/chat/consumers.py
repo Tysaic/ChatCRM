@@ -37,7 +37,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def saveMessage(self, message, userId, roomId):
 
-        print("VALORES:", message, userId, roomId)
         userObj = User.objects.get(userId=userId)
         chatObj = ChatRoom.objects.get(roomId=roomId)
         ChatMessageObj = ChatMessage.objects.create(
@@ -69,21 +68,35 @@ class ChatConsumer(AsyncWebsocketConsumer):
     
     async def connect(self):
         self.userId = self.scope['url_route']['kwargs']['userId']
-        self.user = await self.getUser(self.userId)
+
+        if not self.userId or self.userId in ('null', 'undefined', 'None', ''):
+            await self.close()
+            return
+        
+        try:
+            self.user = await self.getUser(self.userId)
+        except User.DoesNotExist:
+            await self.close()
+            return
+        
         self.userRooms = await self.getUserRooms(self.user)
-
         for room in self.userRooms:
-
             await self.channel_layer.group_add(
                 room.roomId,
                 self.channel_name
             )
+        
         await self.channel_layer.group_add('onlineUser', self.channel_name)
         await self.addOnlineUsers(self.user)
         await self.sendOnlineUserList()
         await self.accept()
 
+
+
     async def disconnect(self, close_code):
+
+        if not hasattr(self, 'user'):
+            return
 
         await self.deleteOnlineUser(self.user)
         await self.sendOnlineUserList()
