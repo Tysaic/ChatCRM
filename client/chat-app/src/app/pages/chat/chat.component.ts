@@ -38,6 +38,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     newMessage = '';
     currentUserId: string | null = null;
     private ws: WebSocket | null = null;
+    selectedImage: string | null = null;
 
     @ViewChild('chatConversation') private chatConversation!: ElementRef;
     private shouldScrollToBottom = false;
@@ -149,5 +150,13 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
             }
         } catch(err) {
         }
+    }
+
+    openImageModal(imageUrl: string): void {
+        this.selectedImage = imageUrl;
+    }
+
+    closeImageModal(): void {
+        this.selectedImage = null;
     }
 }

@@ -14,3 +14,4 @@ server/apps/chat/__pycache__/*.pyo
 server/apps/user/__pycache__/*.pyo
 *.pyc
 __pycache__/
+server/apps/chat/migrations/*

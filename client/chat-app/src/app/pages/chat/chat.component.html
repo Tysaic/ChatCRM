@@ -223,7 +223,7 @@
                                                     }
                                                     <p class="mb-0">{{ msg.message }}</p>
                                                     @if (msg.image) {
-                                                        <img [src]="msg.image" class="rounded mt-2" style="max-width: 200px;" alt="Imagen">
+                                                        <img [src]="msg.image" class="rounded mt-2" style="max-width: 200px;" alt="Imagen" (click)="openImageModal(msg.image)">
                                                     }
                                                     <p class="chat-time mb-0">
                                                         <i class="ri-time-line align-middle"></i>
@@ -321,5 +321,14 @@
         }
     </div>
     <!-- end User chat -->
-
+    @if (selectedImage){
+        <div class="image-modal-overlay" (click)="closeImageModal()">                                                                                                   
+            <div class="image-modal-content" (click)="$event.stopPropagation()">                                                                                        
+                <button class="modal-close-btn" (click)="closeImageModal()">                                                                                            
+                    <i class="ri-close-line"></i>                                                                                                                       
+                </button>                                                                                                                                               
+                <img [src]="selectedImage" alt="Imagen ampliada">                                                                                                       
+            </div>                                                                                                                                                      
+        </div>  
+    }
 </div>
