@@ -12,7 +12,7 @@ interface ChatRoom {
 }
 
 interface Message {
-    user: number;
+    user: string;
     message: string;
     timestamp: Date;
     userName: string;
