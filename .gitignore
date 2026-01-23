@@ -12,3 +12,5 @@ server/apps/chat/__pycache__/*.pyc
 server/apps/user/__pycache__/*.pyc
 server/apps/chat/__pycache__/*.pyo
 server/apps/user/__pycache__/*.pyo
+*.pyc
+__pycache__/

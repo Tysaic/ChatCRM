@@ -58,7 +58,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_send('onlineUser', chatMessage)
     
     async def connect(self):
-        self.userId = self.scope['url_route']['kwargs']['userId']
+        #self.userId = self.scope['url_route']['kwargs']['userId']
+        self.user = await database_sync_to_async(self.addOnlineUsers)(self.user)
         self.userRooms = await database_sync_to_async(
             list
         )(ChatRoom.objects.filter(member=self.user))
@@ -71,7 +72,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
         
         await self.channel_layer.group_add('onlineUser', self.channel_name)
-        self.user = await database_sync_to_async(self.addOnlineUsers)(self.user)
         await database_sync_to_async(self.addOnlineUsers)(self.user)
         await self.sendOnlineUserList()
         await self.accept()

@@ -84,11 +84,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     connectWebSocket(): void {
         const userId = localStorage.getItem('userId');
 
-<<<<<<< HEAD
         this.ws = new WebSocket(`ws://localhost:8000/ws/user/${userId}/chat/`);
-=======
-        this.ws = new WebSocket('ws://localhost:8000/ws/user/${userId}/chat/');
->>>>>>> fc336240e039992ce144e77ed3146ae136794777
 
         this.ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
@@ -124,11 +120,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
 
     getChatDisplayName(chat: ChatRoom): string {
-<<<<<<< HEAD
         //if (chat.type === 'SELF') return 'Personal Chat';
-=======
-        if (chat.type === 'SELF') return 'Personal Chat';
->>>>>>> fc336240e039992ce144e77ed3146ae136794777
         if (chat.name) return chat.name;
 
         const otherMember = chat.member.find(m => m.id !== this.currentUserId);

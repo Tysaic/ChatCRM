@@ -10,6 +10,12 @@ http://localhost:8000/api/v1
 
 ---
 
+## Run Server
+
+```bash
+daphne -b 0.0.0.0 -p 8000 ChatCRM.asgi:application
+```
+
 ## 1. Authentication
 
 ### 1.1 User Registration (Signup)
