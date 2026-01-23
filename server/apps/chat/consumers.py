@@ -42,16 +42,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         ChatMessageObj = ChatMessage.objects.create(
             room=chatObj, user=userObj, message=message
         )
-
-        return {
+        data = {
             'action': 'message',
-            'user': userId,
+            'user': userObj.id,
+            'userId': userObj.userId,
             'roomId': roomId,
             'message': message,
             'userImage': userObj.image.url if userObj.image else None,
             'userName': userObj.first_name + " " + userObj.last_name,
             'timestamp': str(ChatMessageObj.timestamp)
         }
+        return data 
     
     async def sendOnlineUserList(self):
 

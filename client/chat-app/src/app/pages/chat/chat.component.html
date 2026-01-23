@@ -193,26 +193,34 @@
                     <!-- end chat user head -->
 
                     <!-- start chat conversation -->
-                    <div class="chat-conversation p-3 p-lg-4" data-simplebar>
+                    <div class="chat-conversation p-3 p-lg-4" #chatConversation data-simplebar>
                         <ul class="list-unstyled mb-0">
                             @for (msg of messages; track msg.timestamp) {
-                                <li [class.right]="msg.user === currentUserId">
+                                <li [ngClass]="msg.userId === currentUserId ? 'right' : 'left'">
                                     <div class="conversation-list">
-                                        <div class="chat-avatar">
-                                            @if (msg.userImage) {
-                                                <img [src]="msg.userImage" alt="">
-                                            } @else {
-                                                <div class="avatar-xs">
-                                                    <span class="avatar-title rounded-circle bg-primary-subtle text-primary">
-                                                        {{ msg.userName?.charAt(0)?.toUpperCase() || 'U' }}
-                                                    </span>
-                                                </div>
-                                            }
-                                        </div>
+                                        <!-- Avatar a la izquierda para mensajes de otros -->
+                                        @if (msg.userId !== currentUserId) {
+                                            <div class="chat-avatar">
+                                                @if (msg.userImage) {
+                                                    <img [src]="msg.userImage" alt="">
+                                                } @else {
+                                                    <div class="avatar-xs">
+                                                        <span class="avatar-title rounded-circle bg-primary-subtle text-primary">
+                                                            {{ msg.userName?.charAt(0)?.toUpperCase() || 'U' }}
+                                                        </span>
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
 
                                         <div class="user-chat-content">
                                             <div class="ctext-wrap">
                                                 <div class="ctext-wrap-content">
+                                                    <!-- Nombre solo para mensajes de otros -->
+                                                     
+                                                    @if (msg.userId!== currentUserId) {
+                                                        <p class="mb-0 conversation-name text-muted font-size-12">{{ msg.userName }}</p>
+                                                    }
                                                     <p class="mb-0">{{ msg.message }}</p>
                                                     @if (msg.image) {
                                                         <img [src]="msg.image" class="rounded mt-2" style="max-width: 200px;" alt="Imagen">
@@ -232,8 +240,22 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="conversation-name">{{ msg.userName }}</div>
                                         </div>
+
+                                        <!-- Avatar a la derecha para mensajes propios -->
+                                        @if (msg.userId === currentUserId) {
+                                            <div class="chat-avatar">
+                                                @if (msg.userImage) {
+                                                    <img [src]="msg.userImage" alt="">
+                                                } @else {
+                                                    <div class="avatar-xs">
+                                                        <span class="avatar-title rounded-circle bg-primary-subtle text-primary">
+                                                            {{ msg.userName?.charAt(0)?.toUpperCase() || 'U' }}
+                                                        </span>
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
                                     </div>
                                 </li>
                             }

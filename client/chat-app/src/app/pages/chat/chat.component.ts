@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -13,6 +13,7 @@ interface ChatRoom {
 
 interface Message {
     user: string;
+    userId: string;
     message: string;
     timestamp: Date;
     userName: string;
@@ -28,7 +29,8 @@ interface Message {
     styleUrls: ['./chat.component.scss']
 })
 
-export class ChatComponent implements OnInit, OnDestroy {
+export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
+ {
 
     chats: ChatRoom[] = [];
     selectedChat: ChatRoom | null = null;
@@ -36,6 +38,9 @@ export class ChatComponent implements OnInit, OnDestroy {
     newMessage = '';
     currentUserId: string | null = null;
     private ws: WebSocket | null = null;
+
+    @ViewChild('chatConversation') private chatConversation!: ElementRef;
+    private shouldScrollToBottom = false;
 
     constructor(
         private apiService: ApiService,
@@ -59,6 +64,7 @@ export class ChatComponent implements OnInit, OnDestroy {
                 if(chats.length > 0 && !this.selectedChat) {
                     this.selectChat(chats[0]);
                 }
+                this.shouldScrollToBottom = true;
             },
             error: (err) => {
                 if(err.status === 401) {
@@ -90,6 +96,7 @@ export class ChatComponent implements OnInit, OnDestroy {
             const data = JSON.parse(event.data);
 
             if(data.action === 'message' && data.roomId === this.selectedChat?.roomId) {
+                console.log(data);
                 this.messages.push(data);
             }
         }
@@ -112,6 +119,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
         this.ws?.send(JSON.stringify(messageDate));
         this.newMessage = '';
+        this.shouldScrollToBottom = true;
     }
 
     logout(): void {
@@ -125,5 +133,21 @@ export class ChatComponent implements OnInit, OnDestroy {
 
         const otherMember = chat.member.find(m => m.id !== this.currentUserId);
         return otherMember ? `${otherMember.first_name} ${otherMember.last_name}` : 'Chat';
+    }
+
+    ngAfterViewChecked(): void {
+        if (this.shouldScrollToBottom) {
+            this.scrollToBottom();
+            this.shouldScrollToBottom = false;
+        }
+    }
+
+    private scrollToBottom(): void {
+        try {
+            if(this.chatConversation){
+                this.chatConversation.nativeElement.scrollTop = this.chatConversation.nativeElement.scrollHeigh;
+            }
+        } catch(err) {
+        }
     }
 }
