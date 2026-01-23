@@ -34,7 +34,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     selectedChat: ChatRoom | null = null;
     messages: Message[] = [];
     newMessage = '';
-    currentUserId: number = 0;
+    currentUserId: string | null = null;
     private ws: WebSocket | null = null;
 
     constructor(
@@ -43,7 +43,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     ) {}
 
     ngOnInit(): void {
-        this.currentUserId = Number(localStorage.getItem('userId'));
+        this.currentUserId = localStorage.getItem('userId');
         this.loadChats();
         this.connectWebSocket();
     }
@@ -102,7 +102,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     sendMessage(): void {
         
         if(!this.newMessage.trim() || !this.selectedChat) return;
-
+        console.log("Enviando el mensaje: ", this.currentUserId, typeof this.currentUserId);
         const messageDate = {
             action: 'message',
             roomId: this.selectedChat.roomId,
