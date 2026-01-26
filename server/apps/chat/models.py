@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Count
 from shortuuidfield import ShortUUIDField
 from apps.user.models import User
 
@@ -11,6 +12,24 @@ class ChatRoom(models.Model):
     def __str__(self):
         return self.roomId + " -> " + str(self.name)
 
+    @staticmethod
+    def get_existing_dm_room(users_ids):
+
+        if len(users_ids) != 2:
+            return None
+        
+        dm_chats = ChatRoom.objects.filter(type="DM").annotate(
+            member_count = Count('member')
+        ).filter(member_count=2)
+
+        for chat in dm_chats:
+
+            member_ids = [str(member.userId) for member in chat.member.all()]
+
+            if set(member_ids) == set(users_ids):
+                return chat
+        return None
+    
 class ChatMessage(models.Model):
 
     room = models.ForeignKey(ChatRoom, on_delete=models.SET_NULL, null=True)

@@ -31,20 +31,47 @@ class ChatRoomCreateView(APIView):
     def post(self, request):
 
         data = request.data.copy()
+        current_userId = User.objects.get(id=request.user.id).userId
 
         members = data.get('members', [])
+        chat_type = data.get('type', 'DM')
 
         if not isinstance(members, list):
             return Response(
                 {"error": "Members should be a list."},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        members = [str(m) for m in members]
 
-        if request.user.userId not in members:
-            members.append(request.user.userId)
+        #if current_userId not in members:
+        #    members.append(current_userId)
+        
+        if chat_type == "DM":
+            if len(members) != 2:
+
+                return Response(
+                    {"error": "DM chats must have exactly 2 members."},
+                    status = status.HTTP_400_BAD_REQUEST
+                )
+            existing_chat = ChatRoom.get_existing_dm_room(members)
+
+            if existing_chat:
+
+                serializer = ChatRoomSerializer(
+                    existing_chat,
+                    context={'request': request}
+                )
+
+                return Response(
+                    {
+                        'message': 'Chat already exists',
+                        'chat': serializer.data,
+                    },
+                    status = status.HTTP_200_OK
+                )
 
         data['members'] = members
-        
+
         serializer = ChatRoomSerializer(data = data)
 
         if serializer.is_valid():

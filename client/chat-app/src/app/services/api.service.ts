@@ -82,6 +82,7 @@ export class ApiService {
   }
 
   createChat(name: string, type: string, members: number[]): Observable<any> {
+    console.log("Creating chat with", members);
     return this.http.post(`${this.apiUrl}/v1/chats/create`, 
       { name, type, members },
       { headers: this.getAuthHeaders() }
