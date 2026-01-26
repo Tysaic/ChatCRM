@@ -140,11 +140,14 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     }
 
     getChatDisplayName(chat: ChatRoom): string {
-        //if (chat.type === 'SELF') return 'Personal Chat';
-        if (chat.name) return chat.name;
 
-        const otherMember = chat.member.find(m => m.userId !== this.currentUserId);
-        return otherMember ? `${otherMember.first_name} ${otherMember.last_name}` : 'Chat';
+        if(chat.type === 'DM'){
+            const otherMember = chat.member.find(m => m.userId !== this.currentUserId);
+            return otherMember ? `${otherMember.first_name} ${otherMember.last_name}` : 'Chat';
+        }
+        
+        return chat.name || 'Chat Group';
+
     }
 
     ngAfterViewChecked(): void {
