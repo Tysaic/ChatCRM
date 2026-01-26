@@ -25,7 +25,9 @@ class ChatRoomListView(APIView):
         return Response(serializer.data, status = status.HTTP_200_OK)
 
 class ChatRoomCreateView(APIView):
-    #permission_classes = [IsAuthenticated]
+
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
 
         data = request.data.copy()
@@ -37,10 +39,10 @@ class ChatRoomCreateView(APIView):
                 {"error": "Members should be a list."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
-        if request.user.id not in members:
-            members.append(request.user.id)
-        
+
+        if request.user.userId not in members:
+            members.append(request.user.userId)
+
         data['members'] = members
         
         serializer = ChatRoomSerializer(data = data)

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -39,13 +39,21 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     currentUserId: string | null = null;
     private ws: WebSocket | null = null;
     selectedImage: string | null = null;
+    showAddChatModal = false;
+    allUsers: any[] = [];
+    filteredUsers: any[] = [];
+    userSearchQuery = '';
+    loadingUsers = false;
+    chatSearchQuery = '';
+    filteredChats: ChatRoom[] = [];
 
     @ViewChild('chatConversation') private chatConversation!: ElementRef;
     private shouldScrollToBottom = false;
 
     constructor(
         private apiService: ApiService,
-        private router: Router
+        private router: Router,
+        private ngZone: NgZone
     ) {}
 
     ngOnInit(): void {
@@ -62,6 +70,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
         this.apiService.getUserChats().subscribe({
             next: (chats) => {
                 this.chats = chats;
+                this.filteredChats = [...this.chats];
                 if(chats.length > 0 && !this.selectedChat) {
                     this.selectChat(chats[0]);
                 }
@@ -97,8 +106,10 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
             const data = JSON.parse(event.data);
 
             if(data.action === 'message' && data.roomId === this.selectedChat?.roomId) {
-                console.log(data);
-                this.messages.push(data);
+                this.ngZone.run(() => {
+                    this.messages.push(data);
+                    this.shouldScrollToBottom = true;
+                });
             }
         }
 
@@ -132,7 +143,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
         //if (chat.type === 'SELF') return 'Personal Chat';
         if (chat.name) return chat.name;
 
-        const otherMember = chat.member.find(m => m.id !== this.currentUserId);
+        const otherMember = chat.member.find(m => m.userId !== this.currentUserId);
         return otherMember ? `${otherMember.first_name} ${otherMember.last_name}` : 'Chat';
     }
 
@@ -158,5 +169,95 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
     closeImageModal(): void {
         this.selectedImage = null;
+    }
+
+
+    // ========== MODAL CHAT ==========
+
+    openAddChatModal(): void {
+        this.showAddChatModal = true;
+        this.userSearchQuery = '';
+        this.loadUsers();
+    }
+
+    closeAddChatModal(): void {
+        this.showAddChatModal = false;
+        this.userSearchQuery = '';
+        this.filteredUsers = [];
+        this.allUsers = [];
+    }
+
+    loadUsers(): void {
+        this.loadingUsers = true;
+        const currentUserId = this.currentUserId ? [parseInt(this.currentUserId)] : [];
+
+        this.apiService.getUsers(currentUserId).subscribe({
+            next: (response: any) => {
+                this.allUsers = response;
+                this.filteredUsers = [...this.allUsers];
+                this.loadingUsers = false;
+            },
+            error: (error) => {
+                console.error("Error loading users: ", error);
+                this.loadingUsers = false;
+            }
+        });
+    }
+
+    filterUsers(): void {
+        const query = this.userSearchQuery.toLowerCase().trim();
+
+        if (!query) {
+            this.filteredUsers = [...this.allUsers];
+            return;
+        }
+
+        this.filteredUsers = this.allUsers.filter(user => {
+            return user.username.toLowerCase().includes(query) ||
+            user.first_name?.toLowerCase().includes(query) ||
+            user.last_name?.toLowerCase().includes(query) ||
+            user.email?.toLowerCase().includes(query)
+        });
+    }
+
+    startChatWithUser(user: any): void {
+
+        const existingChat = this.chats.find(chat => 
+            chat.type === 'DM' &&
+            chat.member.some((m:any) => m.userId === user.userId)
+        )
+
+
+        if (existingChat) {
+            this.selectChat(existingChat);
+            this.closeAddChatModal();
+            return;
+        }
+
+        this.apiService.createChat('', 'DM', [user.userId, this.currentUserId]).subscribe({
+            next: (response:any) => {
+                console.log('Chat created:', response); 
+                this.loadChats();
+                this.closeAddChatModal();
+            },
+            error: (error) => {
+                console.error("Error creating chat: ", error)
+                alert("Error creating chat. Try again later.");
+            }
+        })
+    }
+
+    filtersChats(): void {
+        const query = this.chatSearchQuery.toLowerCase().trim();
+
+        if (!query) {
+            this.filteredChats = [...this.chats];
+            return;
+        }
+
+        this.filteredChats = this.chats.filter(chat => {
+            const displayName = this.getChatDisplayName(chat).toLowerCase();
+            return displayName.includes(query);
+        });
     }
 }

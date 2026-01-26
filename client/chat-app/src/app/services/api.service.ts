@@ -121,11 +121,7 @@ export class ApiService {
    // ========== USERS ==========
 
    getUsers(exclude?: number[]): Observable<any> {
-    let url = `${this.apiUrl}/users`;
-
-    if (exclude && exclude.length > 0) {
-      url += `?exclude=${exclude.join(',')}`;
-    }
+    let url = `${this.apiUrl}/v1/users`;
 
     return this.http.get(url, {headers: this.getAuthHeaders()});
    }

@@ -62,13 +62,25 @@
             <div class="tab-pane fade show active" id="pills-chat" role="tabpanel">
                 <div>
                     <div class="px-4 pt-4">
-                        <h4 class="mb-4">Chats</h4>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="mb-0">Chats</h4>
+                            <button class="btn btn-primary btn-sm rounded-circle add-chat-btn"
+                                    (click)="openAddChatModal()"
+                                    title="Nuevo chat">
+                                <i class="ri-add-line"></i>
+                            </button>
+                        </div>
                         <div class="search-box chat-search-box">
                             <div class="input-group mb-3 rounded-3">
                                 <span class="input-group-text text-muted bg-light pe-1 ps-3">
                                     <i class="ri-search-line search-icon font-size-18"></i>
                                 </span>
-                                <input type="text" class="form-control bg-light" placeholder="Buscar chats...">
+                                <input 
+                                type="text" 
+                                class="form-control bg-light" 
+                                placeholder="Buscar chats..."
+                                [(ngModel)] = "chatSearchQuery"
+                                (input)="filtersChats()">
                             </div>
                         </div>
                     </div>
@@ -79,7 +91,7 @@
 
                         <div class="chat-message-list px-2" data-simplebar>
                             <ul class="list-unstyled chat-list chat-user-list">
-                                @for (chat of chats; track chat.roomId) {
+                                @for (chat of filteredChats; track chat.roomId) {
                                     <li [class.active]="selectedChat?.roomId === chat.roomId" (click)="selectChat(chat)">
                                         <a href="javascript:void(0);">
                                             <div class="d-flex">
@@ -332,3 +344,84 @@
         </div>  
     }
 </div>
+
+<!-- Modal Agregar Chat -->
+@if (showAddChatModal) {
+    <div class="modal-overlay" (click)="closeAddChatModal()">
+        <div class="add-chat-modal" (click)="$event.stopPropagation()">
+            <!-- Header del Modal -->
+            <div class="modal-header-custom">
+                <h5 class="modal-title">Nuevo Chat</h5>
+                <button class="btn-close-modal" (click)="closeAddChatModal()">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+
+            <!-- Barra de Busqueda -->
+            <div class="modal-search">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-0">
+                        <i class="ri-search-line"></i>
+                    </span>
+                    <input
+                        type="text"
+                        class="form-control bg-light border-0"
+                        placeholder="Search User..."
+                        [(ngModel)]="userSearchQuery"
+                        (input)="filterUsers()">
+                </div>
+            </div>
+
+            <!-- Lista de Usuarios -->
+            <div class="modal-body-custom">
+                @if (loadingUsers) {
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                    </div>
+                } @else if (filteredUsers.length === 0) {
+                    <div class="text-center py-4 text-muted">
+                        <i class="ri-user-search-line font-size-24 d-block mb-2"></i>
+                        <p class="mb-0">No se encontraron usuarios</p>
+                    </div>
+                } @else {
+                    <ul class="user-list list-unstyled mb-0">
+                        @for (user of filteredUsers; track user.userId) {
+                            <li class="user-list-item" (click)="startChatWithUser(user)">
+                                <div class="d-flex align-items-center"> 
+                                    <!-- Avatar -->
+                                    <div class="user-avatar me-3">
+                                        @if (user.image) {
+                                            <img [src]="user.image"
+                                                 class="rounded-circle avatar-sm"
+                                                 alt="{{ user.username }}">
+                                        } @else {
+                                            <div class="avatar-sm">
+                                                <span class="avatar-title rounded-circle bg-primary-subtle text-primary">
+                                                    {{ user.username.charAt(0).toUpperCase() }}
+                                                </span>
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <!-- Info del Usuario -->
+                                    <div class="user-info flex-grow-1">
+                                        <h6 class="mb-0">{{ user.first_name }} {{ user.last_name }}</h6>
+                                        <small class="text-muted">{{ user.username }}</small>
+                                    </div>
+
+                                    <!-- Boton Agregar -->
+                                    <button class="btn btn-outline-primary btn-sm">
+                                        <i class="ri-message-2-line me-1"></i>
+                                    </button>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    </div>
+}
+

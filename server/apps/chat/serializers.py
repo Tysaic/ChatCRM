@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from apps.chat.models import ChatRoom, ChatMessage
 from apps.user.serializers import UserSerializer
+from apps.user.models import User
 
 class ChatRoomSerializer(serializers.ModelSerializer):
 
@@ -9,9 +10,10 @@ class ChatRoomSerializer(serializers.ModelSerializer):
 
     def create(self, validatedData):
 
-        memberObject = validatedData.pop('members')
+        memberUserIds = validatedData.pop('members')
         chat_room = ChatRoom.objects.create(**validatedData)
-        chat_room.member.set(memberObject)
+        users = User.objects.filter(userId__in=memberUserIds)
+        chat_room.member.set(users)
         return chat_room
     
     class Meta:

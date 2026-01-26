@@ -199,3 +199,194 @@
     from { opacity: 0; }                                                                                                                                            
     to { opacity: 1; }                                                                                                                                              
 }  
+
+
+// ========== MODAL AGREGAR CHAT ==========
+
+// Overlay del modal
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    animation: fadeIn 0.2s ease;
+}
+
+// Contenedor del modal
+.add-chat-modal {
+    background: #fff;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 450px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    animation: slideUp 0.3s ease;
+}
+
+// Header del modal
+.modal-header-custom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #e9ecef;
+
+    .modal-title {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #343a40;
+    }
+
+    .btn-close-modal {
+        background: transparent;
+        border: none;
+        font-size: 1.5rem;
+        color: #6c757d;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+        transition: color 0.2s;
+
+        &:hover {
+            color: #343a40;
+        }
+    }
+}
+
+// Barra de busqueda
+.modal-search {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #e9ecef;
+
+    .input-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .input-group-text {
+        color: #6c757d;
+    }
+
+    .form-control {
+        &:focus {
+            box-shadow: none;
+        }
+
+        &::placeholder {
+            color: #adb5bd;
+        }
+    }
+}
+
+// Cuerpo del modal (lista de usuarios)
+.modal-body-custom {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+}
+
+// Lista de usuarios
+.user-list {
+    .user-list-item {
+        padding: 0.875rem 1.25rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        border-bottom: 1px solid #f1f3f5;
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        &:hover {
+            background-color: #f8f9fa;
+        }
+
+        .user-info {
+            h6 {
+                font-size: 0.95rem;
+                color: #343a40;
+            }
+
+            small {
+                font-size: 0.8rem;
+            }
+        }
+    }
+}
+
+// Avatar personalizado
+.avatar-sm {
+    width: 40px;
+    height: 40px;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .avatar-title {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+}
+
+// Boton agregar chat
+.add-chat-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+
+    &:hover {
+        transform: scale(1.05);
+        box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+    }
+}
+
+// Animaciones
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// Responsive
+@media (max-width: 576px) {
+    .add-chat-modal {
+        width: 95%;
+        max-height: 90vh;
+    }
+}
