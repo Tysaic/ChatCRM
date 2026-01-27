@@ -14,7 +14,7 @@ interface ChatRoom {
 interface Message {
     user: string;
     userId: string;
-    message: string;
+    message: string | null;
     timestamp: Date;
     userName: string;
     userImage: string;

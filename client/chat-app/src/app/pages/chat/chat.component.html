@@ -207,29 +207,34 @@
                     <div class="chat-conversation p-3 p-lg-4" #chatConversation data-simplebar>
                         <ul class="list-unstyled mb-0">
                             @for (msg of messages; track msg.timestamp) {
-                                <li [ngClass]="msg.userId === currentUserId ? 'right' : 'left'">
-                                    <div class="conversation-list">
+                                @if (msg.message?.trim() || msg.image) {
+                                    <li [ngClass]="msg.userId === currentUserId ? 'right' : 'left'">
+                                        <div class="conversation-list">
 
-                                        <div class="user-chat-content">
-                                            <div class="ctext-wrap">
-                                                <div class="ctext-wrap-content">
-                                                    <!-- Nombre para todos los mensajes -->
-                                                    <p class="mb-0 conversation-name font-size-12">{{ msg.userName }}</p>
-                                                    
-                                                    <p class="mb-0">{{ msg.message }}</p>
-                                                    @if (msg.image) {
-                                                        <img [src]="msg.image" class="rounded mt-2" style="max-width: 200px;" alt="Imagen" (click)="openImageModal(msg.image)">
-                                                    }
-                                                    <p class="chat-time mb-0">
-                                                        <i class="ri-time-line align-middle"></i>
-                                                        <span class="align-middle">{{ msg.timestamp | date:'HH:mm' }}</span>
-                                                    </p>
+                                            <div class="user-chat-content">
+                                                <div class="ctext-wrap">
+                                                    <div class="ctext-wrap-content">
+                                                        <!-- Nombre para todos los mensajes -->
+                                                        <p class="mb-0 conversation-name font-size-12">{{ msg.userName }}</p>
+                                                        
+                                                        @if (msg.message && msg.message.trim()) {
+                                                            <p class="mb-0">{{ msg.message }}</p>
+                                                        }
+                                                        
+                                                        @if (msg.image) {
+                                                            <img [src]="msg.image" class="rounded mt-2" style="max-width: 200px;" alt="Imagen" (click)="openImageModal(msg.image)">
+                                                        }
+                                                        <p class="chat-time mb-0">
+                                                            <i class="ri-time-line align-middle"></i>
+                                                            <span class="align-middle">{{ msg.timestamp | date:'HH:mm' }}</span>
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                    </div>
-                                </li>
+                                        </div>
+                                    </li>
+                                }
                             }
                         </ul>
                     </div>
