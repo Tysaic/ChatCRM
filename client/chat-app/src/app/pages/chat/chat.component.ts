@@ -143,7 +143,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
         if(chat.type === 'DM'){
             const otherMember = chat.member.find(m => m.userId !== this.currentUserId);
-            return otherMember ? `${otherMember.first_name} ${otherMember.last_name}` : 'Chat';
+            return otherMember ? `${otherMember.first_name} ${otherMember.last_name}` : 'Chat Interno';
         }
         
         return chat.name || 'Chat Group';
