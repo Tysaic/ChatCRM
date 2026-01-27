@@ -7,6 +7,8 @@ from apps.user.models import User
 from apps.chat.models import ChatRoom
 from django.contrib.auth import authenticate
 from django.utils.translation import gettext_lazy as lazy
+
+
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -153,3 +155,43 @@ class ProfileSerializer(serializers.ModelSerializer):
         
         instance.save()
         return instance
+
+class ChangePasswordSerializer(serializers.Serializer):
+
+
+    current_password = serializers.CharField(required=True, write_only=True)
+    new_password = serializers.CharField(
+        required=True, 
+        write_only=True, 
+        validators = [validate_password]
+    )
+    confirm_new_password = serializers.CharField(required=True, write_only=True)
+
+
+    def validate_current_password(self, value):
+
+        user = self.context['request'].user
+        main_user = User.objects.get(id=user.id)
+
+        if not main_user.check_password(value):
+            raise serializer.ValidationError("The password is incorrect from server!")
+        return value
+
+    
+    def validate(self, attrs):
+        if attrs["new_password"] != attrs["confirm_new_password"]:
+
+            raise serializers.ValidationError({
+                "confirm_new_password": "The password doesn't match."
+            })
+
+        return attrs
+    
+    def save(self):
+
+        user = self.context["request"].user
+        main_user = User.objects.get(id=user.id)
+        main_user.set_password(self.validated_data["new_password"])
+        main_user.save()
+
+        return main_user

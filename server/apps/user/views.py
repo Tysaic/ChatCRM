@@ -1,3 +1,6 @@
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateAPIView
 from rest_framework.pagination import LimitOffsetPagination
@@ -5,7 +8,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from .models import User
 from .serializers import (
-    UserSerializer, LoginSerializer, SignupSerializer, ProfileSerializer
+    UserSerializer, LoginSerializer, SignupSerializer, 
+    ProfileSerializer, ChangePasswordSerializer
 )
 
 class UserView(ListAPIView):
@@ -52,3 +56,20 @@ class ProfileView(RetrieveUpdateAPIView):
 
     def get_object(self):
         return User.objects.get(id = self.request.user.id)
+
+class ChangePasswordView(APIView):
+
+    def post(self, request):
+
+        serializer = ChangePasswordSerializer(
+            data=request.data,
+            context = {'request': request}
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                "message": "Password were updated successfully!"
+            }, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)

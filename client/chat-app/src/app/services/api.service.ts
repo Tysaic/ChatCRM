@@ -165,4 +165,18 @@ export class ApiService {
 
     return this.http.patch(`${this.apiUrl}/v1/profile`, formData, { headers });
    }
+
+   // ========== PASSWORD ==========
+
+   changePassword(passwordData: {
+    current_password: string;
+    new_password: string;
+    confirm_new_password: string;
+   }): Observable<any> {
+    return this.http.post(
+      `${this.apiUrl}/v1/change-password`,
+      passwordData, 
+      { headers: this.getAuthHeaders() }
+    )
+   }
 }

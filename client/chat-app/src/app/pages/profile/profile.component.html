@@ -93,6 +93,77 @@
             Guardar cambios
           }
         </button>
+        <!-- Seccion Cambiar Contraseña -->
+        <div class="password-section">
+          <button
+            type="button"
+            class="btn btn-outline-secondary btn-password-toggle"
+            (click)="togglePasswordForm()">
+            <i class="ri-lock-line me-2"></i>
+            {{ showPasswordForm ? 'Cancelar' : 'Cambiar contraseña' }}
+          </button>
+
+          @if (showPasswordForm) {
+            <div class="password-form">
+              <div class="form-group">
+                <label for="currentPassword">Contraseña actual</label>
+                <input
+                  type="password"
+                  id="currentPassword"
+                  class="form-control"
+                  [(ngModel)]="passwordData.current_password"
+                  name="current_password"
+                  required>
+              </div>
+
+              <div class="form-group">
+                <label for="newPassword">Nueva contraseña</label>
+                <input
+                  type="password"
+                  id="newPassword"
+                  class="form-control"
+                  [(ngModel)]="passwordData.new_password"
+                  name="new_password"
+                  required>
+              </div>
+
+              <div class="form-group">
+                <label for="confirmPassword">Confirmar nueva contraseña</label>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  class="form-control"
+                  [(ngModel)]="passwordData.confirm_new_password"
+                  name="confirm_new_password"
+                  required>
+              </div>
+
+              <!-- Mensaje de contraseña -->
+              @if (passwordMessage) {
+                <div class="alert"
+                    [class.alert-success]="passwordMessageType === 'success'"
+                    [class.alert-danger]="passwordMessageType === 'error'">
+                  {{ passwordMessage }}
+                </div>
+              }
+
+              <button
+                type="button"
+                class="btn btn-primary btn-save-password"
+                (click)="changePassword()"
+                [disabled]="savingPassword || !passwordData.current_password || !passwordData.new_password || !passwordData.confirm_new_password">
+                @if (savingPassword) {
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                  Guardando...
+                } @else {
+                  <i class="ri-lock-password-line me-2"></i>
+                  Actualizar contraseña
+                }
+              </button>
+            </div>
+          }
+        </div>
+
       </form>
     }
   </div>

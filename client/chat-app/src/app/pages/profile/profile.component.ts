@@ -38,6 +38,16 @@ export class ProfileComponent implements OnInit {
     message = '';
     messageType: 'success' | 'error' = 'success';
 
+    showPasswordForm = false;
+    passwordData = {
+        current_password: '',
+        new_password: '',
+        confirm_new_password: ''
+    };
+    savingPassword = false;
+    passwordMessage = '';
+    passwordMessageType: 'success' | 'error' = 'success';
+
     constructor (
         private apiService: ApiService,
         private router: Router
@@ -108,5 +118,58 @@ export class ProfileComponent implements OnInit {
 
     goBack(): void {
         this.router.navigate(['/chat']);
+    }
+
+
+    // ========== PASSWORD ==========
+
+    togglePasswordForm(): void {
+        this.showPasswordForm = !this.showPasswordForm;
+        this.passwordMessage = '';
+        this.passwordData = {
+            current_password: '',
+            new_password : '',
+            confirm_new_password : ''
+        };
+    }
+
+    changePassword(): void {
+        if(this.passwordData.new_password != this.passwordData.confirm_new_password){
+            this.passwordMessage = "The password doesn't match";
+            this.passwordMessageType = "error";
+            return;
+        }
+
+        this.savingPassword = true;
+        this.passwordMessage = '';
+
+
+        this.apiService.changePassword(this.passwordData).subscribe({
+            next: (response) => {
+                this.savingPassword = false;
+                this.passwordMessage = response.message || "Password update correctly!";
+                this.passwordMessageType = "success";
+                this.passwordData = {
+                    current_password: '',
+                    new_password: '',
+                    confirm_new_password: ''
+                };
+
+                setTimeout(() => {
+                    this.showPasswordForm = false;
+                    this.passwordMessage = '';
+                }, 2000);
+            },
+            error: (err) => {
+                this.savingPassword = false;
+                this.passwordMessage = 
+                err.error?.current_password?.[0] ||
+                err.error?.new_password?.[0] ||
+                err.error?.confirm_new_password?.[0] ||
+                err.error?.detail ||
+                'Error changing the password';
+                this.passwordMessageType = 'error';
+            }
+        })
     }
 }
