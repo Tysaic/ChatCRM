@@ -92,7 +92,9 @@
                         <div class="chat-message-list px-2" data-simplebar>
                             <ul class="list-unstyled chat-list chat-user-list">
                                 @for (chat of filteredChats; track chat.roomId) {
-                                    <li [class.active]="selectedChat?.roomId === chat.roomId" (click)="selectChat(chat)">
+                                    <li [class.active]="selectedChat?.roomId === chat.roomId"
+                                        [class.unread]="chat.hasUnread"
+                                        (click)="selectChat(chat)">
                                         <a href="javascript:void(0);">
                                             <div class="d-flex">
                                                 <div class="chat-user-img online align-self-center me-3 ms-0">
@@ -111,6 +113,15 @@
                                                 <div class="flex-grow-1 overflow-hidden">
                                                     <h4 class="text-truncate font-size-15 mb-1">{{ getChatDisplayName(chat) }}</h4>
                                                 </div>
+
+                                                <!-- Badge de mensaje nuevo -->
+                                                @if (chat.hasUnread) {
+                                                    <div class="unread-badge align-self-center">
+                                                        <span class="badge bg-danger rounded-pill">
+                                                            <i class="ri-message-2-fill"></i>
+                                                        </span>
+                                                    </div>
+                                                }
                                             </div>
                                         </a>
                                     </li>

@@ -9,6 +9,8 @@ interface ChatRoom {
     name: string;
     type: string;
     member: any[];
+    hasUnread: boolean;
+    lastMessageAt?: Date;
 }
 
 interface Message {
@@ -73,10 +75,15 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     loadChats(): void {
         this.apiService.getUserChats().subscribe({
             next: (chats) => {
-                this.chats = chats;
+                this.chats = chats.map((chat: any) => ({
+                    ...chat,
+                    hasUnread: false,
+                    lastMessageAt: new Date()
+                }));
                 this.filteredChats = [...this.chats];
+
                 if(chats.length > 0 && !this.selectedChat) {
-                    this.selectChat(chats[0]);
+                    this.selectChat(this.chats[0]);
                 }
                 this.shouldScrollToBottom = true;
             },
@@ -90,6 +97,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
     selectChat(chat: ChatRoom): void {
         this.selectedChat = chat;
+
+        const chatIndex = this.chats.findIndex( c=> c.roomId === chat.roomId);
+        if(chatIndex !== -1){
+            this.chats[chatIndex].hasUnread = false;
+        }
         this.loadMessages(chat.roomId);
     }
 
@@ -107,12 +119,20 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
         this.ws = new WebSocket(`ws://localhost:8000/ws/user/${userId}/chat/`);
 
         this.ws.onmessage = (event) => {
+            
             const data = JSON.parse(event.data);
 
-            if(data.action === 'message' && data.roomId === this.selectedChat?.roomId) {
-                this.ngZone.run(() => {
-                    this.messages.push(data);
-                    this.shouldScrollToBottom = true;
+            if(data.action === 'message'){
+                this.ngZone.run( () => {
+
+                    if (data.roomId === this.selectedChat?.roomId) {
+                        this.messages.push(data);
+                        this.shouldScrollToBottom = true;
+                    } else {
+                        this.markChatAsUnread(data.roomId);
+                    }
+
+                    this.moveChatToTop(data.roomId);
                 });
             }
         }
@@ -360,6 +380,26 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
                 this.uploadingImage = false;
             }
         })
+    }
+
+    markChatAsUnread(roomId: string): void {
+        const chatIndex = this.chats.findIndex( c => c.roomId === roomId);
+
+        if(chatIndex !== -1){
+            this.chats[chatIndex].hasUnread = true;
+        }
+    }
+
+    moveChatToTop(roomId: string): void {
+        const chatIndex = this.chats.findIndex( c=> c.roomId === roomId);
+
+        if(chatIndex > 0){
+            const [chat] = this.chats.splice(chatIndex, 1);
+            chat.lastMessageAt = new Date();
+            this.chats.unshift(chat);
+
+            this.filteredChats = [...this.chats];
+        }
     }
 
 }
