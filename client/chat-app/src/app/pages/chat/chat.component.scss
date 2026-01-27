@@ -1,7 +1,7 @@
 /* Estilos del componente Chat - Los estilos principales vienen de la plantilla Chatvia */
 
 .chat-conversation {
-    padding-bottom: 100px;
+    padding-bottom: 150px;
     overflow-y: auto;
     max-height: calc(100vh - 200px);
 }
@@ -389,4 +389,49 @@
         width: 95%;
         max-height: 90vh;
     }
+}
+
+
+.image-preview-container {
+  margin-bottom: 8px;
+  
+  .image-preview {
+    position: relative;
+    display: inline-block;
+
+    img {
+      max-height: 80px;
+      max-width: 120px;
+      border-radius: 6px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .btn-remove-image {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #dc3545;
+      color: white;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 0;
+      line-height: 1;
+
+      &:hover {
+        background: #c82333;
+      }
+      
+      i {
+        font-size: 12px;
+      }
+    }
+  }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked, NgZone, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -46,15 +46,19 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     loadingUsers = false;
     chatSearchQuery = '';
     filteredChats: ChatRoom[] = [];
-
     @ViewChild('chatConversation') private chatConversation!: ElementRef;
     private shouldScrollToBottom = false;
+    selectedFile: File | null = null;
+    imagePreview: string | null = null;
+    uploadingImage = false;
 
     constructor(
         private apiService: ApiService,
         private router: Router,
         private ngZone: NgZone
     ) {}
+
+   @ViewChild('fileInput') fileInput!: ElementRef;
 
     ngOnInit(): void {
         this.currentUserId = localStorage.getItem('userId');
@@ -119,9 +123,18 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     }
 
     sendMessage(): void {
+        if(!this.selectedChat) return;
         
-        if(!this.newMessage.trim() || !this.selectedChat) return;
-        console.log("Enviando el mensaje: ", this.currentUserId, typeof this.currentUserId);
+        // Si no hay mensaje ni imagen, no enviar
+        if(!this.newMessage.trim() && !this.selectedFile) return;
+        
+        // Si hay imagen seleccionada, usar el método de subida
+        if(this.selectedFile) {
+            this.sendMessageWithImage();
+            return;
+        }
+        
+        // Solo mensaje de texto
         const messageDate = {
             action: 'message',
             roomId: this.selectedChat.roomId,
@@ -263,4 +276,90 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
             return displayName.includes(query);
         });
     }
+
+    onFileSelected(event: Event): void {
+        const input = event.target as HTMLInputElement;
+
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+
+            if(!file.type.startsWith('image/')){
+                alert("Please select a valid image file.");
+                return;
+            }
+
+            if(file.size > 5 * 1024 * 1024){
+                alert("Image size exceeds 5MB limit.");
+                return;
+            }
+
+            this.selectedFile = file;
+
+            const reader = new FileReader();
+
+            reader.onload = (e: ProgressEvent<FileReader>) => {
+                this.imagePreview = e.target?.result as string;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    cancelImageSelection(): void {
+        this.selectedFile = null;
+        this.imagePreview = null;
+        if (this.fileInput) {
+            this.fileInput.nativeElement.value = '';
+        }
+    }
+
+    // Send image with message
+
+    sendMessageWithImage(): void {
+
+        if(!this.selectedFile || !this.selectedChat) return;
+
+        this.uploadingImage = true;
+
+        this.apiService.uploadChatImage(
+            this.selectedChat.roomId,
+            this.selectedFile,
+            this.newMessage.trim()
+        ).subscribe({
+            next: (response) => {
+                const wsMessage = {
+                    action: 'message',
+                    roomId : this.selectedChat?.roomId,
+                    user: this.currentUserId,
+                    message: response.message,
+                    image: response.image,
+                    fromUpload: true
+                };
+                this.ws?.send(JSON.stringify(wsMessage));
+
+                this.ngZone.run( () => {
+                    this.messages.push({
+                        user: response.user,
+                        userId: response.userId,
+                        message: response.message,
+                        timestamp: new Date(response.timestamp),
+                        userName: response.userName,
+                        userImage: response.userImage,
+                        image: response.image
+                    });
+                    this.shouldScrollToBottom = true;
+                });
+
+                this.uploadingImage = false;
+                this.cancelImageSelection();
+                this.newMessage = '';
+
+            },
+            error: (err) =>{
+                console.log("Error uploading image: ", err);
+                alert("Error uploading image. Please try again.");
+                this.uploadingImage = false;
+            }
+        })
+    }
+
 }

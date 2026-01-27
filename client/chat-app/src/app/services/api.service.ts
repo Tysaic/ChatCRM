@@ -112,9 +112,7 @@ export class ApiService {
     formData.append('image', image);
 
     const token = localStorage.getItem('access_token');
-    const header = new HttpHeaders({
-      'Authorization': token ? `Bearer ${token}` : ''
-    });
+    const header = this.getAuthHeaders();
 
     return this.http.post(`${this.apiUrl}/chats/messages`, formData, { headers: header });
   }
@@ -159,9 +157,7 @@ export class ApiService {
     }
 
     const token = localStorage.getItem('access_token');
-    const headers = new HttpHeaders({
-      'Authorization': token ? `Bearer ${token}` : ''
-    });
+    const headers = this.getAuthHeaders();
 
     return this.http.patch(`${this.apiUrl}/v1/profile`, formData, { headers });
    }
@@ -178,5 +174,23 @@ export class ApiService {
       passwordData, 
       { headers: this.getAuthHeaders() }
     )
+   }
+
+   // ========== CHAT IMAGES ==========
+
+   uploadChatImage(roomId: string, image: File, message: string = ''): Observable<any> {
+      const formData = new FormData();
+      formData.append('roomId', roomId);
+      formData.append('image', image);
+      formData.append('message', message);
+
+      const token = localStorage.getItem('access_token');
+      const headers = this.getAuthHeaders();
+
+      return this.http.post(
+        `${this.apiUrl}/v1/chat/messages/upload-image`,
+        formData,
+        { headers: headers}
+      );
    }
 }

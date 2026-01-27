@@ -3,7 +3,8 @@ from .views import (
     ChatRoomListView,
     ChatRoomCreateView,
     UserChatRoomView,
-    MessagesView
+    MessagesView,
+    UploadChatImageView
 )
 
 urlpatterns = [
@@ -12,4 +13,5 @@ urlpatterns = [
     path("user/chats", UserChatRoomView.as_view(), name="user-chat-rooms"),
     path("chats/messages", MessagesView.as_view(), name="send-chat-messages"), # POST
     path("chats/messages/<str:roomId>", MessagesView.as_view(), name="list-chat-messages"), # GET
+    path('chats/messages/upload-image', UploadChatImageView.as_view(), name="upload-chat-image"),
 ]

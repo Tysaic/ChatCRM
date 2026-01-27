@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.generics import ListAPIView
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import ChatRoomSerializer, ChatMessageSerializer
 from .models import ChatRoom, ChatMessage
 from apps.user.models import User
@@ -143,3 +144,59 @@ class MessagesView(ListAPIView):
         context = super().get_serializer_context()
         context['request'] = self.request
         return context
+
+class UploadChatImageView(APIView):
+    parser_classes = [MultiPartParser, FormParser]
+
+
+    def post(self, request):
+
+        room_id = request.data.get('roomId')
+        image = request.FILES.get('image')
+        message = request.data.get('message', '')
+
+        if not room_id or not image:
+
+            return Response(
+                {"error": "roomId or image not provided."},
+                status = status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            chatroom = ChatRoom.objects.get(roomId = room_id)
+        except ChatRoom.DoesNotExist:
+
+            return Response(
+                {"error": "Chat room does not exists."},
+                status = status.HTTP_404_NOT_FOUND
+            )
+
+        user = User.objects.get(id=request.user.id)
+
+        if not chatroom.member.filter(id=user.id).exists():
+
+            return Response(
+                {"error": "You aren't member of this chat room!"},
+                status = status.HTTP_403_FORBIDDEN
+            )
+        
+        chat_message = ChatMessage.objects.create(
+            room = chatroom,
+            user = user,
+            message = message,
+            image = image
+        )
+
+        return Response(
+            {
+                "messageId": chat_message.id,
+                "roomId": chatroom.roomId,
+                "message": message,
+                "image": request.build_absolute_uri(chat_message.image.url),
+                "userId": user.userId,
+                "userName": user.username,
+                "userImage": request.build_absolute_uri(user.image.url) if user.image else None,
+                "timestamp": str(chat_message.timestamp)
+            },
+            status = status.HTTP_201_CREATED
+        )
