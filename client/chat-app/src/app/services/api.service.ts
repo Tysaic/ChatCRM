@@ -185,11 +185,14 @@ export class ApiService {
       formData.append('message', message);
 
       const token = localStorage.getItem('access_token');
-      const headers = this.getAuthHeaders();
+      const headers = new HttpHeaders({
+          'Authorization': token ? `Bearer ${token}` : ''
+        });
 
       return this.http.post(
-        `${this.apiUrl}/v1/chat/messages/upload-image`,
+        `${this.apiUrl}/v1/chats/messages/upload-image`,
         formData,
+        
         { headers: headers}
       );
    }

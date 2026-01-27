@@ -276,26 +276,26 @@
 
                     <!-- start chat input section -->
                     <div class="chat-input-section p-3 p-lg-4 border-top mb-0">
-                        <!-- Preview de imagen seleccionada -->
-                        @if (imagePreview) {
-                            <div class="image-preview-container mb-2">
-                                <div class="image-preview">
-                                    <img [src]="imagePreview" alt="Preview">
-                                    <button class="btn-remove-image" (click)="cancelImageSelection()">
-                                        <i class="ri-close-line"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        }
-
                         <div class="row g-0">
                             <div class="col">
+                                <!-- Preview de imagen seleccionada - ENCIMA del input -->
+                                @if (imagePreview) {
+                                    <div class="image-preview-floating">
+                                        <div class="image-preview">
+                                            <img [src]="imagePreview" alt="Preview">
+                                            <button class="btn-remove-image" (click)="cancelImageSelection()">
+                                                <i class="ri-close-line"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
+                                
                                 <input
                                     type="text"
                                     class="form-control form-control-lg bg-light border-light"
                                     placeholder="Escribe un mensaje..."
                                     [(ngModel)]="newMessage"
-                                    (keyup.enter)="!uploadingImage && sendMessage()"
+                                    (keydown.enter)="sendMessage(); $event.preventDefault()"
                                     [disabled]="uploadingImage"
                                 >
                             </div>

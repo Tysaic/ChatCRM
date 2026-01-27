@@ -155,6 +155,7 @@ class UploadChatImageView(APIView):
         image = request.FILES.get('image')
         message = request.data.get('message', '')
 
+        print("DATA:", room_id, image, message)
         if not room_id or not image:
 
             return Response(
