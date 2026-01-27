@@ -34,7 +34,7 @@ class ChatMessage(models.Model):
 
     room = models.ForeignKey(ChatRoom, on_delete=models.SET_NULL, null=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    message = models.TextField(default=' ')
+    message = models.TextField(null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     image = models.ImageField(upload_to='tmp/', blank=True, null=True)
 
