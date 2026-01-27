@@ -1,10 +1,11 @@
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework.generics import CreateAPIView, ListAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateAPIView
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
 from .models import User
 from .serializers import (
-    UserSerializer, LoginSerializer, SignupSerializer
+    UserSerializer, LoginSerializer, SignupSerializer, ProfileSerializer
 )
 
 class UserView(ListAPIView):
@@ -38,3 +39,16 @@ class SignupApiView(CreateAPIView):
     permission_classes = [AllowAny]
     queryset = User.objects.all()
     serializer_class = SignupSerializer
+
+class ProfileView(RetrieveUpdateAPIView):
+    """
+    GET: Getting profile user 
+    PUT/PATCH: Updating authenticated profile user
+    """
+
+    serializer_class = ProfileSerializer
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_object(self):
+        return User.objects.get(id = self.request.user.id)

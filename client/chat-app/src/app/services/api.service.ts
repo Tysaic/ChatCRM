@@ -126,4 +126,43 @@ export class ApiService {
 
     return this.http.get(url, {headers: this.getAuthHeaders()});
    }
+
+   // ========== PROFILE ==========
+
+   getProfile(): Observable<any> {
+    return this.http.get(
+      `${this.apiUrl}/v1/profile`, 
+      {headers: this.getAuthHeaders()}
+    );
+   }
+
+   updateProfile(profileData: {
+    first_name?: string,
+    last_name?: string,
+    email?: string,
+    image?: File;
+   }): Observable<any> {
+
+    const formData = new FormData();
+
+    if (profileData.first_name){
+      formData.append('first_name', profileData.first_name);
+    }
+    if (profileData.last_name) {
+      formData.append('last_name', profileData.last_name);
+    }
+    if (profileData.email) {
+      formData.append('email', profileData.email);
+    }
+    if (profileData.image) {
+      formData.append('image', profileData.image);
+    }
+
+    const token = localStorage.getItem('access_token');
+    const headers = new HttpHeaders({
+      'Authorization': token ? `Bearer ${token}` : ''
+    });
+
+    return this.http.patch(`${this.apiUrl}/v1/profile`, formData, { headers });
+   }
 }

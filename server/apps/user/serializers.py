@@ -122,3 +122,34 @@ class SignupSerializer(serializers.ModelSerializer):
             'userId': instance.userId,
             'message': 'User registered successfully'
         }
+
+class ProfileSerializer(serializers.ModelSerializer):
+
+    email = serializers.EmailField(required=False)
+
+    class Meta:
+
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name', 'image']
+        read_only_fields = ['username']
+    
+    def validate_email(self, value):
+
+        user = self.context['request'].user
+
+        if User.objects.exclude(pk=user.pk).filter(email=value).exists():
+            raise serializers.ValidationError("Email existing currently!")
+        return value
+
+    def update(self, instance, validated_data):
+
+        instance.email = validated_data.get('email', instance.email)
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+
+
+        if 'image' in validated_data:
+            instance.image = validated_data['image']
+        
+        instance.save()
+        return instance

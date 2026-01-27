@@ -1,0 +1,99 @@
+<div class="profile-container">
+  <div class="profile-card">
+    <!-- Header -->
+    <div class="profile-header">
+      <button class="btn-back" (click)="goBack()">
+        <i class="ri-arrow-left-line"></i>
+      </button>
+      <h2>Mi Perfil</h2>
+    </div>
+
+    @if (loading) {
+      <div class="loading-spinner">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+      </div>
+    } @else {
+      <!-- Imagen de perfil -->
+      <div class="profile-image-section">
+        <div class="profile-image-wrapper">
+          @if (imagePreview || profile.image) {
+            <img [src]="imagePreview || profile.image" alt="Foto de perfil">
+          } @else {
+            <div class="profile-image-placeholder">
+              <span>{{ profile.first_name.charAt(0).toUpperCase() || 'U' }}</span>
+            </div>
+          }
+          <label class="image-upload-btn" for="imageInput">
+            <i class="ri-camera-line"></i>
+          </label>
+          <input
+            type="file"
+            id="imageInput"
+            accept="image/*"
+            (change)="onImageSelected($event)"
+            hidden>
+        </div>
+        <p class="username">{{ profile.username }}</p>
+      </div>
+
+      <!-- Formulario -->
+      <form class="profile-form" (ngSubmit)="saveProfile()">
+        <div class="form-group">
+          <label for="firstName">Nombre</label>
+          <input
+            type="text"
+            id="firstName"
+            class="form-control"
+            [(ngModel)]="profile.first_name"
+            name="first_name"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Apellido</label>
+          <input
+            type="text"
+            id="lastName"
+            class="form-control"
+            [(ngModel)]="profile.last_name"
+            name="last_name"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Correo electronico</label>
+          <input
+            type="email"
+            id="email"
+            class="form-control"
+            [(ngModel)]="profile.email"
+            name="email"
+            required>
+        </div>
+
+        <!-- Mensaje -->
+        @if (message) {
+          <div class="alert" [class.alert-success]="messageType === 'success'" [class.alert-danger]="messageType === 'error'">
+            {{ message }}
+          </div>
+        }
+
+        <!-- Boton guardar -->
+        <button
+          type="submit"
+          class="btn btn-primary btn-save"
+          [disabled]="saving">
+          @if (saving) {
+            <span class="spinner-border spinner-border-sm me-2"></span>
+            Guardando...
+          } @else {
+            <i class="ri-save-line me-2"></i>
+            Guardar cambios
+          }
+        </button>
+      </form>
+    }
+  </div>
+</div>
