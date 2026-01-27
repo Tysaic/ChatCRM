@@ -251,20 +251,18 @@
                     </div>
                     <!-- end chat conversation -->
 
+                    <!-- Preview flotante de imagen -->
+                    @if (imagePreview) {
+                        <div class="floating-image-preview">
+                            <img [src]="imagePreview" alt="Preview">
+                            <button class="btn-close-preview" (click)="cancelImageSelection()">
+                                <i class="ri-close-line"></i>
+                            </button>
+                        </div>
+                    }
+
                     <!-- start chat input section -->
                     <div class="chat-input-section p-3 p-lg-4 border-top mb-0">
-                        <!-- Preview de imagen seleccionada -->
-                        @if (imagePreview) {
-                            <div class="image-preview-container mb-2">
-                                <div class="image-preview">
-                                    <img [src]="imagePreview" alt="Preview">
-                                    <button class="btn-remove-image" (click)="cancelImageSelection()">
-                                        <i class="ri-close-line"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        }
-
                         <div class="row g-0">
                             <div class="col">
                                 <input

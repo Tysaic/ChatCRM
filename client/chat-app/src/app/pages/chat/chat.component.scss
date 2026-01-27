@@ -1,5 +1,66 @@
 /* Estilos del componente Chat - Los estilos principales vienen de la plantilla Chatvia */
 
+// Preview flotante - Totalmente independiente
+.floating-image-preview {
+    position: absolute;
+    bottom: 120px;
+    left: 20px;
+    z-index: 999;
+    background: white;
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    border: 2px solid #e9ecef;
+    animation: fadeInScale 0.2s ease;
+
+    img {
+        display: block;
+        max-height: 80px;
+        max-width: 100px;
+        border-radius: 8px;
+        object-fit: cover;
+    }
+
+    .btn-close-preview {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #dc3545;
+        color: white;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.5);
+        transition: all 0.2s;
+
+        &:hover {
+            background: #c82333;
+            transform: scale(1.15);
+        }
+
+        i {
+            font-size: 12px;
+            line-height: 1;
+        }
+    }
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
 .chat-conversation {
     padding-bottom: 100px;
     overflow-y: auto;
