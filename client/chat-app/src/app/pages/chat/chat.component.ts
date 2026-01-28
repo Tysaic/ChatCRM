@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { CHAT_TYPES } from '../../constants/chat.constants';
 
 interface ChatRoom {
     roomId: string;
@@ -194,7 +195,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
     getChatDisplayName(chat: ChatRoom): string {
 
-        if(chat.type === 'DM'){
+        if(chat.type === CHAT_TYPES.DM){
             const otherMember = chat.member.find(m => m.userId !== this.currentUserId);
             return otherMember ? `${otherMember.first_name} ${otherMember.last_name}` : 'Chat Interno';
         }
@@ -279,7 +280,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     startChatWithUser(user: any): void {
 
         const existingChat = this.chats.find(chat => 
-            chat.type === 'DM' &&
+            chat.type === CHAT_TYPES.DM &&
             chat.member.some((m:any) => m.userId === user.userId)
         )
 
@@ -290,7 +291,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
             return;
         }
 
-        this.apiService.createChat('', 'DM', [user.userId, this.currentUserId]).subscribe({
+        this.apiService.createChat('', CHAT_TYPES.DM, [user.userId, this.currentUserId]).subscribe({
             next: (response:any) => {
                 const newRoomId = response.roomId || response.chat?.roomId;
 

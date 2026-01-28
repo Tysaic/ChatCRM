@@ -5,8 +5,19 @@ from apps.user.models import User
 from django.utils import timezone
 
 class ChatRoom(models.Model):
+
+    class ChatType(models.TextChoices):
+        DM = 'DM', 'Direct Message'
+        GROUP = 'GROUP', 'Group Chat'
+        SELF = 'SELF', 'Personal Chat'
+    
+
     roomId = ShortUUIDField()
-    type = models.CharField(max_length=10, default='DM')
+    type = models.CharField(
+        max_length=10,
+        choices = ChatType.choices,
+        default = ChatType.DM
+    )
     member = models.ManyToManyField(User)
     name = models.CharField(max_length=20, null=True, blank=True)
 
