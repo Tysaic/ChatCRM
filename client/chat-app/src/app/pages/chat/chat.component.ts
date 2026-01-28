@@ -37,34 +37,47 @@ interface Message {
 export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
  {
 
+    // Usuario actual
+    currentUser: any = null;
+    currentUserId: string | null = null;
+
+    // Chats y mensajes
     chats: ChatRoom[] = [];
+    filteredChats: ChatRoom[] = [];
     selectedChat: ChatRoom | null = null;
     messages: Message[] = [];
     newMessage = '';
-    currentUser: any = null;
-    currentUserId: string | null = null;
-    private ws: WebSocket | null = null;
-    selectedImage: string | null = null;
+
+    // Búsqueda
+    chatSearchQuery = '';
+    userSearchQuery = '';
+
+    // Modal de usuarios
     showAddChatModal = false;
     allUsers: any[] = [];
     filteredUsers: any[] = [];
-    userSearchQuery = '';
     loadingUsers = false;
-    chatSearchQuery = '';
-    filteredChats: ChatRoom[] = [];
-    @ViewChild('chatConversation') private chatConversation!: ElementRef;
-    private shouldScrollToBottom = false;
+    filterMode: 'all' | 'unread' = 'all';
+
+    // Imágenes
+    selectedImage: string | null = null;
     selectedFile: File | null = null;
     imagePreview: string | null = null;
     uploadingImage = false;
+
+    // WebSocket
+    private ws: WebSocket | null = null;
+
+    // Estado y referencias
+    private shouldScrollToBottom = false;
+    @ViewChild('chatConversation') private chatConversation!: ElementRef;
+    @ViewChild('fileInput') fileInput!: ElementRef;
 
     constructor(
         private apiService: ApiService,
         private router: Router,
         private ngZone: NgZone
     ) {}
-
-   @ViewChild('fileInput') fileInput!: ElementRef;
 
     ngOnInit(): void {
         this.currentUserId = localStorage.getItem('userId');
@@ -297,6 +310,40 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
         });
     }
 
+    filterByUnread(): void {
+        if(this.filterMode === 'unread'){
+            this.filterMode = 'all';
+            this.filteredChats = [...this.chats];
+        } else {
+            this.filterMode = 'unread';
+            this.filteredChats = this.chats.filter(
+                chat => chat.unread_count > 0
+            );
+        }
+    }
+
+    filtersChats(): void {
+        const query = this.chatSearchQuery.toLowerCase().trim();
+
+
+        let baseChats = this.filterMode === 'unread'
+        ? this.chats.filter(chat => chat.unread_count > 0)
+        : [... this.chats];
+        
+        if (!query) {
+            this.filteredChats = baseChats;
+            return;
+        }
+
+        this.filteredChats = baseChats.filter(chat => {
+            const displayName = this.getChatDisplayName(chat).toLowerCase();
+            return displayName.includes(query);
+        });
+    }
+
+    get totalUnreadCount(): number {
+        return this.chats.reduce((sum, chat) => sum + (chat.unread_count || 0), 0);
+    }
     startChatWithUser(user: any): void {
 
         const existingChat = this.chats.find(chat => 
@@ -340,19 +387,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
         })
     }
 
-    filtersChats(): void {
-        const query = this.chatSearchQuery.toLowerCase().trim();
-
-        if (!query) {
-            this.filteredChats = [...this.chats];
-            return;
-        }
-
-        this.filteredChats = this.chats.filter(chat => {
-            const displayName = this.getChatDisplayName(chat).toLowerCase();
-            return displayName.includes(query);
-        });
-    }
 
     onFileSelected(event: Event): void {
         const input = event.target as HTMLInputElement;
