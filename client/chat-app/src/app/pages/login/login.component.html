@@ -15,6 +15,12 @@
                 <div class="card">
                     <div class="card-body p-4">
                         <div class="p-3">
+                            @if(sessionExpired) {
+                                <div class="alert alert-warning">
+                                    <i class="ri-error-warning-line me-2"></i>
+                                    Tu sesión ha expirado. Por favor, inicia sesión nuevamente.
+                                </div>
+                            }
                             <form (ngSubmit)="onSubmit()">
 
                                 <div class="mb-3">
@@ -87,7 +93,7 @@
 
                 <div class="mt-5 text-center">
                     <p>No tienes cuenta? <a routerLink="/signup" class="fw-medium text-primary">Registrate ahora</a></p>
-                    <p>© 2024 ChatCRM. Desarrollado con <i class="mdi mdi-heart text-danger"></i></p>
+                    <p>© 2026 VOX. Desarrollado con Amor y Pasion<i class="mdi mdi-heart text-danger"></i></p>
                 </div>
             </div>
         </div>

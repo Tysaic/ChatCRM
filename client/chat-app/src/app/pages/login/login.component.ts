@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 
 @Component({
@@ -12,16 +12,25 @@ import { ApiService } from '../../services/api.service';
     styleUrls: ['./login.component.scss']
 })
 
-export class LoginComponent {
+export class LoginComponent implements OnInit {
     username = '';
     password = '';
     error = '';
     loading = false;
+    sessionExpired = false;
 
     constructor(
         private apiService: ApiService,
-        private router: Router
+        private router: Router,
+        private route: ActivatedRoute
     ){}
+
+    ngOnInit(): void {
+        //Verify if the sessionExpired query param is present
+        this.route.queryParams.subscribe(params => {
+            this.sessionExpired = params['sessionExpired'] === 'true';
+        })
+    }
 
     onSubmit(): void {
         if(!this.username || !this.password) {
@@ -43,6 +52,4 @@ export class LoginComponent {
             }
         });
     }
-
-
 }
