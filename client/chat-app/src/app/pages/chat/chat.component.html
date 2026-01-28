@@ -71,8 +71,26 @@
             <!-- Start chats tab-pane -->
             <div class="tab-pane fade show active" id="pills-chat" role="tabpanel">
                 <div>
+                    <div class="px-4 pt-3 pb-3 border-bottom">
+                        <div class="d-flex align-items-center">
+                            @if (currentUser?.image) {
+                                <img [src]="currentUser.image" alt="" class="rounded-circle avatar-sm me-2">
+                            } @else {
+                                <div class="avatar-sm me-2">
+                                    <span class="avatar-title rounded-circle bg-primary-subtle text-primary font-size-12">
+                                        {{ currentUser?.first_name?.charAt(0).toUpperCase() }}{{ currentUser?.last_name?.charAt(0).toUpperCase() }}
+                                    </span>
+                                </div>
+                            }
+                            <div class="flex-grow-1 overflow-hidden">
+                                <h6 class="mb-0 text-truncate font-size-14">{{ currentUser?.first_name }} {{ currentUser?.last_name }}</h6>
+                                <small class="text-muted d-block text-truncate font-size-11">{{ currentUser?.username }}</small>
+                            </div>
+                        </div>
+                    </div>
                     <div class="px-4 pt-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
+
                             <h4 class="mb-0">Chats</h4>
                             <button class="btn btn-primary btn-sm rounded-circle add-chat-btn"
                                     (click)="openAddChatModal()"
@@ -97,8 +115,38 @@
 
                     <!-- Start chat-message-list -->
                     <div class="">
-                        <h5 class="mb-3 px-3 font-size-16">Recientes</h5>
+                        <div class="d-flex justify-content-between align-items-center mb-3 px-3">
+                            <h5 class="mb-0 font-size-16">Recientes</h5>
+                            
+                            <!-- Filtro de no leidos -->
+                            <button
+                                class="btn btn-sm"
+                                [class.btn-primary]="filterMode === 'unread'"
+                                [class.btn-light]="filterMode === 'all'"
+                                (click)="filterByUnread()"
+                                [title]="filterMode === 'unread' ? 'Mostrar todos' : 'Mostrar no leidos'">
+                                <i class="ri-filter-3-line me-1"></i>
+                                @if (totalUnreadCount > 0) {
+                                    <span class="badge bg-danger rounded-pill">
+                                        {{ totalUnreadCount > 99 ? '99+' : totalUnreadCount }}
+                                    </span>
+                                } @else {
+                                    <span>No leidos</span>
+                                }
+                            </button>
+                        </div>
 
+                        <!-- Mensaje cuando no hay chats en el filtro -->
+                        @if (filterMode === 'unread' && filteredChats.length === 0) {
+                            <div class="text-center py-4 text-muted">
+                                <i class="ri-checkbox-circle-line font-size-24 d-block mb-2 text-success"></i>
+                                <p class="mb-0">No tienes mensajes sin leer</p>
+                                <button class="btn btn-link btn-sm" (click)="filterByUnread()">
+                                    Ver todos los chats
+                                </button>
+                            </div>
+                        }
+                        
                         <div class="chat-message-list px-2" data-simplebar>
                             <ul class="list-unstyled chat-list chat-user-list">
                                 @for (chat of filteredChats; track chat.roomId) {
