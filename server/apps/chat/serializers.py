@@ -45,9 +45,8 @@ class ChatRoomSerializer(serializers.ModelSerializer):
 
         memberUserIds = validatedData.pop('members')
         chat_room = ChatRoom.objects.create(**validatedData)
-        users = User.objects.filter(
-            Q(userId__in=memberUserIds) | Q(user__in=memberUserIds)
-        )
+        users = User.objects.filter(userId__in=memberUserIds)
+        chat_room.member.set(users)
 
         for user in users:
             ChatRoomMembership.objects.get_or_create(

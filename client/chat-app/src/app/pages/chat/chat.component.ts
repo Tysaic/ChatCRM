@@ -155,6 +155,13 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
         };
     }
 
+    reconnectWebSocket(): void {
+        if(this.ws){
+            this.ws.onclose = null;
+            this.ws.close();
+        }
+        this.connectWebSocket();
+    }
     sendMessage(): void {
         if(!this.selectedChat) return;
         
@@ -285,8 +292,24 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
         this.apiService.createChat('', 'DM', [user.userId, this.currentUserId]).subscribe({
             next: (response:any) => {
-                console.log('Chat created:', response); 
-                this.loadChats();
+                const newRoomId = response.roomId || response.chat?.roomId;
+
+                this.apiService.getUserChats().subscribe({
+                    next: (chats) => {
+                        this.chats = chats.map((chat: any) => ({
+                            ...chat,
+                            hasUnread: false,
+                            lastMessageAt: new Date()
+                        }));
+                        this.filteredChats = [...this.chats];
+
+                        const newChat = this.chats.find( (c: ChatRoom) => c.roomId === newRoomId);
+                        if(newChat){
+                            this.selectChat(newChat);
+                            this.reconnectWebSocket();
+                        }
+                    }
+                });
                 this.closeAddChatModal();
             },
             error: (error) => {
