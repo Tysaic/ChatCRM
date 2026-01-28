@@ -41,6 +41,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     selectedChat: ChatRoom | null = null;
     messages: Message[] = [];
     newMessage = '';
+    currentUser: any = null;
     currentUserId: string | null = null;
     private ws: WebSocket | null = null;
     selectedImage: string | null = null;
@@ -67,12 +68,24 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
     ngOnInit(): void {
         this.currentUserId = localStorage.getItem('userId');
+        this.loadCurrentUser();
         this.loadChats();
         this.connectWebSocket();
     }
 
     ngOnDestroy(): void {
         this.ws?.close();
+    }
+
+    loadCurrentUser(): void {
+        this.apiService.getProfile().subscribe({
+            next: (user) => {
+                this.currentUser = user;
+            },
+            error: (err) => {
+                console.error("Error loading user profile: ", err);
+            }
+        })
     }
 
     loadChats(): void {
@@ -199,9 +212,16 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
             const otherMember = chat.member.find(m => m.userId !== this.currentUserId);
             return otherMember ? `${otherMember.first_name} ${otherMember.last_name}` : 'Chat Interno';
         }
-        
         return chat.name || 'Chat Group';
+    }
 
+    getChatDisplayImage(chat: ChatRoom): string  | null {
+        if(chat.type === CHAT_TYPES.DM){
+            const otherMember = chat.member.find(m => m.userId !== this.currentUserId);
+            return otherMember?.image || null;
+        }
+
+        return chat.member[0]?.image || null;
     }
 
     ngAfterViewChecked(): void {

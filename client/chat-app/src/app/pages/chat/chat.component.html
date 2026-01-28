@@ -41,7 +41,17 @@
             <ul class="nav side-menu-nav justify-content-center">
                 <li class="nav-item btn-group dropup profile-user-dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <img src="assets/images/users/avatar-1.jpg" alt="" class="profile-user rounded-circle">
+                        @if (currentUser) {
+                            @if (currentUser.image) {
+                                <img [src]="currentUser.image" alt="" class="profile-user rounded-circle">
+                            } @else {
+                                <div class="avatar-xs">
+                                    <span class="avatar-title rounded-circle bg-primary-subtle text-primary">
+                                        {{ currentUser.first_name.charAt(0).toUpperCase() }}{{ currentUser.last_name.charAt(0).toUpperCase() }}
+                                    </span>
+                                </div>
+                            }
+                        }
                     </a>
                     <div class="dropdown-menu">
                         <a class="dropdown-item" routerLink="/profile">Perfil <i class="ri-profile-line float-end text-muted"></i></a>
@@ -98,8 +108,8 @@
                                         <a href="javascript:void(0);">
                                             <div class="d-flex">
                                                 <div class="chat-user-img online align-self-center me-3 ms-0">
-                                                    @if (chat.member[0]?.image) {
-                                                        <img [src]="chat.member[0].image" class="rounded-circle avatar-xs" alt="">
+                                                    @if (getChatDisplayImage(chat)){
+                                                        <img [src]="getChatDisplayImage(chat)" class="rounded-circle avatar-xs" alt="">
                                                     } @else {
                                                         <div class="avatar-xs">
                                                             <span class="avatar-title rounded-circle bg-primary-subtle text-primary">
@@ -168,8 +178,8 @@
                                         </a>
                                     </div>
                                     <div class="me-3 ms-0">
-                                        @if (selectedChat.member[0]?.image) {
-                                            <img [src]="selectedChat.member[0].image" class="rounded-circle avatar-xs" alt="">
+                                        @if (getChatDisplayImage(selectedChat)) {
+                                            <img [src]="getChatDisplayImage(selectedChat)" class="rounded-circle avatar-xs" alt="">
                                         } @else {
                                             <div class="avatar-xs">
                                                 <span class="avatar-title rounded-circle bg-primary-subtle text-primary">
