@@ -598,3 +598,34 @@
         opacity: 1;
     }
 }
+
+
+// Chat con mensajes no leidos
+.chat-list li.unread {
+    background-color: rgba(var(--bs-primary-rgb), 0.05);
+
+    h4 {
+        font-weight: 600;
+    }
+
+    .last-message {
+        font-weight: 500;
+        color: var(--bs-dark);
+    }
+}
+
+// Meta info del chat (timestamp y badge)
+.chat-meta {
+    min-width: 50px;
+
+    .badge {
+        font-size: 10px;
+        min-width: 18px;
+        padding: 4px 6px;
+    }
+}
+
+// Preview del mensaje
+.chat-list li .text-muted {
+    max-width: 150px;
+}

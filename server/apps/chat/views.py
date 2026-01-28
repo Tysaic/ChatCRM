@@ -200,3 +200,37 @@ class UploadChatImageView(APIView):
             },
             status = status.HTTP_201_CREATED
         )
+    
+
+class MarkChatAsReadView(APIView):
+
+    def post(self, request, roomId):
+
+        try:
+            chatroom = ChatRoom.objects.get(roomId = roomId)
+        except ChatRoom.DoesNotExist:
+
+            return Response(
+                {"error": "Chat room does not exists."},
+                status = status.HTTP_404_NOT_FOUND
+            )
+        
+        user = User.objects.get(id=request.user.id)
+
+        if not chatroom.member.filter(id = user.id).exists():
+
+            return Response(
+                {"error": "You aren't member of this chat room!"},
+                status = status.HTTP_403_FORBIDDEN
+            )
+        
+        membership = chatroom.get_membership(user = user)
+        membership.mark_as_read()
+
+        return Response({
+            "message": "Chat marked as read.",
+            "roomId": roomId,
+            "last_read_at": membership.last_read_at
+        },
+        status = status.HTTP_200_OK
+        )

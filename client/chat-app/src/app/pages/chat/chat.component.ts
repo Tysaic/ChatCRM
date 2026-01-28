@@ -10,6 +10,8 @@ interface ChatRoom {
     type: string;
     member: any[];
     hasUnread: boolean;
+    unread_count: number;
+    last_message: string | null;
     lastMessageAt?: Date;
 }
 
@@ -98,10 +100,18 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     selectChat(chat: ChatRoom): void {
         this.selectedChat = chat;
 
-        const chatIndex = this.chats.findIndex( c=> c.roomId === chat.roomId);
-        if(chatIndex !== -1){
-            this.chats[chatIndex].hasUnread = false;
+        if(chat.unread_count > 0 ) {
+            this.apiService.markChatAsRead(chat.roomId).subscribe({
+                next: () => {
+                    const chatIndex = this.chats.findIndex( c=> c.roomId === chat.roomId);
+                    if(chatIndex !== -1){
+                        this.chats[chatIndex].unread_count = 0;
+                    }
+                },
+                error: (err) =>  console.error("Error marking chat as read: ", err)
+            });
         }
+
         this.loadMessages(chat.roomId);
     }
 
@@ -116,7 +126,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     connectWebSocket(): void {
         const userId = localStorage.getItem('userId');
 
-        this.ws = new WebSocket(`ws://localhost:8000/ws/user/${userId}/chat/`);
+        this.ws = new WebSocket(`${this.apiService.getWebSocketUrl()}/ws/user/${userId}/chat/`);
 
         this.ws.onmessage = (event) => {
             
@@ -128,8 +138,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
                     if (data.roomId === this.selectedChat?.roomId) {
                         this.messages.push(data);
                         this.shouldScrollToBottom = true;
+
+                        this.apiService.markChatAsRead(data.roomId).subscribe();
                     } else {
-                        this.markChatAsUnread(data.roomId);
+                        //this.markChatAsUnread(data.roomId);
+                        this.incrementUnreadCount(data.roomId);
                     }
 
                     this.moveChatToTop(data.roomId);
@@ -395,10 +408,16 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
         if(chatIndex > 0){
             const [chat] = this.chats.splice(chatIndex, 1);
-            chat.lastMessageAt = new Date();
             this.chats.unshift(chat);
-
             this.filteredChats = [...this.chats];
+        }
+    }
+
+    incrementUnreadCount(roomId: string): void {
+        const chatIndex = this.chats.findIndex( c=> c.roomId === roomId);
+
+        if(chatIndex !== -1){
+            this.chats[chatIndex].unread_count = (this.chats[chatIndex].unread_count || 0) + 1
         }
     }
 

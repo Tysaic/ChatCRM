@@ -13,10 +13,14 @@ import { User } from '../models/user.model';
 
 export class ApiService {
   private apiUrl = environment.apiUrl;
+  private wsUrl = environment.wsUrl;
   private isAuthenticated = new BehaviorSubject<boolean>(this.hasToken());
 
   constructor(private http: HttpClient) {}
-
+  // ========== WS ==========
+  getWebSocketUrl(): string {
+    return this.wsUrl;
+  }
   // ========== AUTH ==========
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
@@ -195,5 +199,14 @@ export class ApiService {
         
         { headers: headers}
       );
+   }
+
+   // ========== MARK AS READ ==========
+
+   markChatAsRead(roomId: string): Observable<any> {
+      return this.http.post(
+        `${this.apiUrl}/v1/chats/${roomId}/mark-read`,
+        {}, { headers: this.getAuthHeaders()}
+      )
    }
 }
