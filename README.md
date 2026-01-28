@@ -1,4 +1,4 @@
-# ChatCRM
+# V0X
 
 REST API for chat/CRM system with JWT authentication.
 
@@ -13,7 +13,7 @@ http://localhost:8000/api/v1
 ## Run Server
 
 ```bash
-daphne -b 0.0.0.0 -p 8000 ChatCRM.asgi:application
+daphne -b 0.0.0.0 -p 8000 V0X.asgi:application
 ```
 
 ## 1. Authentication

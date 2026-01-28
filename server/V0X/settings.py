@@ -46,7 +46,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'ChatCRM.urls'
+ROOT_URLCONF = 'V0X.urls'
 
 TEMPLATES = [
     {
@@ -63,8 +63,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'ChatCRM.wsgi.application'
-ASGI_APPLICATION = 'ChatCRM.asgi.application'
+WSGI_APPLICATION = 'V0X.wsgi.application'
+ASGI_APPLICATION = 'V0X.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -118,8 +118,8 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'ChatCRM API',
-    'DESCRIPTION': 'REST API CHATCRM application',
+    'TITLE': 'V0X API',
+    'DESCRIPTION': 'REST API V0X application',
     'VERSION': '1.0.0',
 }
 # Internationalization
