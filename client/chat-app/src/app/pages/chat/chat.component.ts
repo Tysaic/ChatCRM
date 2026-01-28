@@ -146,6 +146,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
         this.apiService.getMessages(roomId).subscribe({
             next:(response) => {
                 this.messages = response.results.reverse();
+                this.shouldScrollToBottom = true;
             }
         })
     }
@@ -247,7 +248,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     private scrollToBottom(): void {
         try {
             if(this.chatConversation){
-                this.chatConversation.nativeElement.scrollTop = this.chatConversation.nativeElement.scrollHeigh;
+                this.chatConversation.nativeElement.scrollTop = this.chatConversation.nativeElement.scrollHeight;
             }
         } catch(err) {
         }
