@@ -161,7 +161,10 @@ export class ApiService {
     }
 
     const token = localStorage.getItem('access_token');
-    const headers = this.getAuthHeaders();
+    // Header without json content type for FormData
+    const headers = new HttpHeaders({
+      'Authorization': token ? `Bearer ${token}` : ''
+    });
 
     return this.http.patch(`${this.apiUrl}/v1/profile`, formData, { headers });
    }
