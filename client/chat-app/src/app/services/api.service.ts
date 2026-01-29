@@ -183,27 +183,6 @@ export class ApiService {
     )
    }
 
-   // ========== CHAT IMAGES ==========
-
-   uploadChatImage(roomId: string, image: File, message: string = ''): Observable<any> {
-      const formData = new FormData();
-      formData.append('roomId', roomId);
-      formData.append('image', image);
-      formData.append('message', message);
-
-      const token = localStorage.getItem('access_token');
-      const headers = new HttpHeaders({
-          'Authorization': token ? `Bearer ${token}` : ''
-        });
-
-      return this.http.post(
-        `${this.apiUrl}/v1/chats/messages/upload-image`,
-        formData,
-        
-        { headers: headers}
-      );
-   }
-
    // ========== MARK AS READ ==========
 
    markChatAsRead(roomId: string): Observable<any> {
@@ -212,4 +191,25 @@ export class ApiService {
         {}, { headers: this.getAuthHeaders()}
       )
    }
+   // ========== FILE UPLOAD ==========
+
+  uploadChatFile(roomId: string, file: File, message: string = ''): Observable<any> {
+      const formData = new FormData();
+
+      formData.append('roomId', roomId);
+      formData.append('file', file);
+      formData.append('message', message);
+
+      const token = localStorage.getItem('access_token');
+      const headers = new HttpHeaders({
+        'Authorization': token ? `Bearer ${token}` : ''
+      });
+
+    return this.http.post(
+      `${this.apiUrl}/v1/chats/messages/upload-file`,
+      formData,
+      { headers: headers }
+    );
+  }
 }
+

@@ -3,7 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
-import { CHAT_TYPES } from '../../constants/chat.constants';
+import { 
+    CHAT_TYPES, ALLOWED_IMAGE_TYPES, ALLOWED_DOC_TYPES, 
+    MAX_FILE_SIZE, selectedFileType 
+} from '../../constants/chat.constants';
 
 interface ChatRoom {
     roomId: string;
@@ -24,6 +27,11 @@ interface Message {
     userName: string;
     userImage: string;
     image?: string;
+    file?: string;
+    fileName?: string;
+    fileType?: string;
+    fileSize?: number;
+    type: 'image' | 'file' | 'text';
 }
 
 @Component({
@@ -62,6 +70,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     // Imágenes
     selectedImage: string | null = null;
     selectedFile: File | null = null;
+    selectedFileType: selectedFileType = null;
     imagePreview: string | null = null;
     uploadingImage = false;
 
@@ -209,6 +218,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
                                 userName: data.userName,
                                 userImage: data.userImage,
                                 image: data.image || null,
+                                type: data.type || 'text',
                             })
                         }
                         this.shouldScrollToBottom = true;
@@ -243,7 +253,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
         
         // Si hay imagen seleccionada, usar el método de subida
         if(this.selectedFile) {
-            this.sendMessageWithImage();
+            this.sendMessageWithFile();
             return;
         }
 
@@ -257,6 +267,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
             timestamp: now,
             userName: this.currentUser ? `${this.currentUser.first_name} ${this.currentUser.last_name}` : '',
             userImage: this.currentUser?.image || null,
+            type: 'text',
         })
         
         // Solo mensaje de texto
@@ -453,30 +464,39 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
         if (input.files && input.files[0]) {
             const file = input.files[0];
+            const isImage = ALLOWED_IMAGE_TYPES.includes(file.type);
+            const isDocument = ALLOWED_DOC_TYPES.includes(file.type);
 
-            if(!file.type.startsWith('image/')){
-                alert("Please select a valid image file.");
+            if(!isImage && !isDocument){
+                alert("Solo se permiten imágenes, PDFs y documentos de Office.");
                 return;
             }
 
-            if(file.size > 5 * 1024 * 1024){
-                alert("Image size exceeds 5MB limit.");
+            if(file.size > MAX_FILE_SIZE){
+                alert("El archivo excede el tamaño maximo de 10 mb.");
                 return;
             }
 
             this.selectedFile = file;
+            this.selectedFileType = isImage ? 'image' : 'file';
 
-            const reader = new FileReader();
+            if(isImage) {
+                const reader = new FileReader();
+                reader.onload = (e: any) => {
+                    this.imagePreview = e.target?.result as string;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                this.imagePreview = null;
+            }
 
-            reader.onload = (e: ProgressEvent<FileReader>) => {
-                this.imagePreview = e.target?.result as string;
-            };
-            reader.readAsDataURL(file);
+
         }
     }
 
-    cancelImageSelection(): void {
+    cancelFileSelection(): void {
         this.selectedFile = null;
+        this.selectedFileType = null;
         this.imagePreview = null;
         if (this.fileInput) {
             this.fileInput.nativeElement.value = '';
@@ -485,13 +505,13 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
     // Send image with message
 
-    sendMessageWithImage(): void {
+    sendMessageWithFile(): void {
 
         if(!this.selectedFile || !this.selectedChat) return;
 
         this.uploadingImage = true;
 
-        this.apiService.uploadChatImage(
+        this.apiService.uploadChatFile(
             this.selectedChat.roomId,
             this.selectedFile,
             this.newMessage.trim()
@@ -503,7 +523,15 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
                     user: this.currentUserId,
                     message: response.message,
                     image: response.image,
-                    fromUpload: true
+                    file: response.file || null,
+                    fileName: response.fileName || null,
+                    fileType: response.fileType || null,
+                    fileSize: response.fileSize || null,
+                    type: response.type,
+                    fromUpload: true,
+                    userName: response.userName,
+                    userImage: response.userImage,
+                    timestamp: response.timestamp
                 };
                 this.ws?.send(JSON.stringify(wsMessage));
 
@@ -515,13 +543,18 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
                         timestamp: new Date(response.timestamp),
                         userName: response.userName,
                         userImage: response.userImage,
-                        image: response.image
+                        image: response.image,
+                        file: response.file || null,
+                        fileName: response.fileName,
+                        fileType: response.fileType || null,
+                        fileSize: response.fileSize || null,
+                        type: response.type,
                     });
                     this.shouldScrollToBottom = true;
                 });
 
                 this.uploadingImage = false;
-                this.cancelImageSelection();
+                this.cancelFileSelection();
                 this.newMessage = '';
 
             },
@@ -557,6 +590,28 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
         if(chatIndex !== -1){
             this.chats[chatIndex].unread_count = (this.chats[chatIndex].unread_count || 0) + 1
         }
+    }
+
+    formatFileSize(bytes: number): string {
+        if(bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    getFileIcon(fileType: string): string {
+        if(fileType.includes('pdf')) return 'ri-files-pdf-line';
+
+        if( fileType.includes('word') || fileType.includes('document') ) return  'ri-file-word-line';
+
+        if( fileType.includes('excel') || fileType.includes('spreadsheet') ) return 'ri-file-excel-line';
+
+        if( fileType.includes('powerpoint') || fileType.includes('presentation') ) return 'ri-file-powerpoint-line';
+
+        if( fileType.includes('text') ) return 'ri-file-text-line';
+
+        return 'ri-file-line'
     }
 
 }

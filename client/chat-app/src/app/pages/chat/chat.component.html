@@ -301,6 +301,20 @@
                                                         @if (msg.image) {
                                                             <img [src]="msg.image" class="rounded mt-2" style="max-width: 200px;" alt="Imagen" (click)="openImageModal(msg.image)">
                                                         }
+                                                        @if (msg.file) {
+                                                            <div class="file-attachment mt-2">
+                                                                <a [href]="msg.file" target="_blank" class="d-flex align-items-center text-decoration-none">
+                                                                    <div class="file-icon me-2">
+                                                                        <i [class]="getFileIcon(msg.fileType || '')" class="font-size-24 text-primary"></i>
+                                                                    </div>
+                                                                    <div class="file-info">
+                                                                        <span class="file-name d-block">{{ msg.fileName }}</span>
+                                                                        <span class="file-size text-muted font-size-11">{{ formatFileSize(msg.fileSize || 0) }}</span>
+                                                                    </div>
+                                                                    <i class="ri-download-line ms-2 text-muted"></i>
+                                                                </a>
+                                                            </div>
+                                                        }
                                                         <p class="chat-time mb-0">
                                                             <i class="ri-time-line align-middle"></i>
                                                             <span class="align-middle">{{ msg.timestamp | date:'HH:mm' }}</span>
@@ -318,15 +332,23 @@
                     <!-- end chat conversation -->
 
                     <!-- Preview flotante de imagen -->
-                    @if (imagePreview) {
-                        <div class="floating-image-preview">
-                            <img [src]="imagePreview" alt="Preview">
-                            <button class="btn-close-preview" (click)="cancelImageSelection()">
+                    <!-- Preview flotante de archivo -->
+                    @if (selectedFile) {
+                        <div class="floating-file-preview">
+                            @if (selectedFileType === 'image' && imagePreview) {
+                                <img [src]="imagePreview" alt="Preview">
+                            } @else {
+                                <div class="file-preview-info">
+                                    <i [class]="getFileIcon(selectedFile.type)" class="font-size-24"></i>
+                                    <span class="file-name">{{ selectedFile.name }}</span>
+                                    <span class="file-size text-muted">{{ formatFileSize(selectedFile.size) }}</span>
+                                </div>
+                            }
+                            <button class="btn-close-preview" (click)="cancelFileSelection()">
                                 <i class="ri-close-line"></i>
                             </button>
                         </div>
                     }
-
                     <!-- start chat input section -->
                     <div class="chat-input-section p-3 p-lg-4 border-top mb-0">
                         <div class="row g-0">
@@ -360,7 +382,7 @@
                                             <input
                                                 type="file"
                                                 #fileInput
-                                                accept="image/*"
+                                                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
                                                 (change)="onFileSelected($event)"
                                                 hidden
                                             >

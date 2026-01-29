@@ -17,3 +17,7 @@ __pycache__/
 server/apps/chat/migrations/*
 docs/*
 docs
+server/media/chat_files
+server/media/chat_images
+server/media/chat_files/*
+server/media/chat_images/*
