@@ -20,6 +20,13 @@ class ChatRoom(models.Model):
     )
     member = models.ManyToManyField(User)
     name = models.CharField(max_length=20, null=True, blank=True)
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='created_chats'
+    )
 
     def __str__(self):
         return self.roomId + "-" + str(self.name)

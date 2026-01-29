@@ -191,16 +191,16 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
                     }
 
 
-                    const isOwnUploadedMessage = data.userId === this.currentUserId &&
-                    this.messages.some(m => 
-                        m.image === data.image &&
+                    // Verificar si el mensaje ya existe (evitar duplicados)
+                    const isDuplicate = this.messages.some(m =>
                         m.userId === data.userId &&
+                        m.message === data.message &&
                         Math.abs(new Date(m.timestamp).getTime() - new Date(data.timestamp).getTime()) < 5000
                     );
 
                     if (data.roomId === this.selectedChat?.roomId) {
 
-                        if(!isOwnUploadedMessage) {
+                        if(!isDuplicate) {
                             this.messages.push({
                                 user: data.user,
                                 userId: data.userId,
@@ -246,18 +246,32 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
             this.sendMessageWithImage();
             return;
         }
+
+        const messageText = this.newMessage.trim();
+        const now = new Date();
+
+        this.messages.push({
+            user: this.currentUser?.id || '',
+            userId: this.currentUserId || '',
+            message: messageText,
+            timestamp: now,
+            userName: this.currentUser ? `${this.currentUser.first_name} ${this.currentUser.last_name}` : '',
+            userImage: this.currentUser?.image || null,
+        })
         
         // Solo mensaje de texto
-        const messageDate = {
+        const messageData = {
             action: 'message',
             roomId: this.selectedChat.roomId,
             user: this.currentUserId,
-            message: this.newMessage.trim()
+            message: messageText
         }
 
-        this.ws?.send(JSON.stringify(messageDate));
+        this.ws?.send(JSON.stringify(messageData));
         this.newMessage = '';
         this.shouldScrollToBottom = true;
+
+        this.moveChatToTop(this.selectedChat.roomId);
     }
 
     logout(): void {

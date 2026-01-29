@@ -8,7 +8,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import ChatRoomSerializer, ChatMessageSerializer
 from .models import ChatRoom, ChatMessage
 from apps.user.models import User
-from django.db.models import Q
+from django.db.models import Q, Exists, OuterRef
 from django.shortcuts import get_object_or_404
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
@@ -17,10 +17,8 @@ class ChatRoomListView(APIView):
     #permission_classes = [IsAuthenticated]
 
     def get(self, request):
-
-        chatRooms = ChatRoom.objects.filter(
-            Q(member = request.user.id) | Q(member = request.user.userId)
-        )
+        user_instance = User.objects.get(id = request.user.id)
+        chatRooms = ChatRoom.objects.filter(member=user_instance)
 
         serializer = ChatRoomSerializer(
             chatRooms, many=True, context={'request': request}
@@ -78,7 +76,8 @@ class ChatRoomCreateView(APIView):
         serializer = ChatRoomSerializer(data = data)
 
         if serializer.is_valid():
-            serializer.save()
+            current_user = User.objects.get(id=request.user.id)
+            serializer.save(created_by=current_user)
             return Response(serializer.data, status = status.HTTP_201_CREATED)
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
@@ -86,9 +85,18 @@ class UserChatRoomView(APIView):
     #permission_classes = [IsAuthenticated]
     def get(self, request):
 
+        user = request.user
+        user_instance = User.objects.get(id=user.id)
+
+        has_messages = ChatMessage.objects.filter(room = OuterRef('pk'))
+
         chatRooms = ChatRoom.objects.filter(
-            Q(member = request.user.id) | Q(member = request.user.userId)
-        )
+            member = user_instance
+        ).annotate(
+            has_messages = Exists(has_messages)
+        ).filter(
+            Q(has_messages = True) | Q(created_by = user_instance)
+        ).distinct()
 
         serializer = ChatRoomSerializer(
             chatRooms, many=True, context={'request': request}
