@@ -159,19 +159,60 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
         this.ws.onmessage = (event) => {
             
             const data = JSON.parse(event.data);
+            
+            if(data.action === 'new_chat') {
+
+                this.ngZone.run(() => {
+                    const newChat: ChatRoom = {
+                        ...data.chat,
+                        hasUnread:false,
+                        unread_count: 0,
+                        lastMessageAt: new Date()
+                    };
+
+                    const exists = this.chats.some(c => c.roomId === newChat.roomId);
+                    if(!exists) {
+                        this.chats.unshift(newChat);
+                        this.filteredChats = [...this.chats];
+
+                        this.ws?.send(JSON.stringify({
+                            action: 'join_room',
+                            roomId: newChat.roomId    
+                        }));
+                    }
+                });
+                return;
+            }
+
 
             if(data.action === 'message'){
                 this.ngZone.run( () => {
+                    const isOwnUploadedMessage = data.userId === this.currentUserId &&
+                    this.messages.some(m => 
+                        m.image === data.image &&
+                        m.userId === data.userId &&
+                        Math.abs(new Date(m.timestamp).getTime() - new Date(data.timestamp).getTime()) < 5000
+                    );
 
                     if (data.roomId === this.selectedChat?.roomId) {
-                        this.messages.push(data);
-                        this.shouldScrollToBottom = true;
 
+                        if(!isOwnUploadedMessage) {
+                            this.messages.push({
+                                user: data.user,
+                                userId: data.userId,
+                                message: data.message,
+                                timestamp: new Date(data.timestamp),
+                                userName: data.userName,
+                                userImage: data.userImage,
+                                image: data.image || null,
+                            })
+                        }
+                        this.shouldScrollToBottom = true;
                         this.apiService.markChatAsRead(data.roomId).subscribe();
-                    } else {
-                        //this.markChatAsUnread(data.roomId);
+                    } else{
                         this.incrementUnreadCount(data.roomId);
                     }
+
 
                     this.moveChatToTop(data.roomId);
                 });

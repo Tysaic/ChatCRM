@@ -35,7 +35,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         return list(ChatRoom.objects.filter(member=user))
     
     @database_sync_to_async
-    def saveMessage(self, message, userId, roomId):
+    def saveMessage(self, message, userId, roomId, image=None):
 
         userObj = User.objects.get(userId=userId)
         chatObj = ChatRoom.objects.get(roomId=roomId)
@@ -50,7 +50,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'message': message,
             'userImage': userObj.image.url if userObj.image else None,
             'userName': userObj.first_name + " " + userObj.last_name,
-            'timestamp': str(ChatMessageObj.timestamp)
+            'timestamp': str(ChatMessageObj.timestamp),
+            'image': image
         }
         return data 
     
@@ -87,6 +88,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 self.channel_name
             )
         
+        await self.channel_layer.group_add(f'user_{self.userId}', self.channel_name)
         await self.channel_layer.group_add('onlineUser', self.channel_name)
         await self.addOnlineUsers(self.user)
         await self.sendOnlineUserList()
@@ -107,18 +109,25 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 room.roomId,
                 self.channel_name
             )
+        
+        await self.channel_layer.group_discard(f'user_{self.userId}', self.channel_name)
     
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
         action = text_data_json['action']
         roomId = text_data_json['roomId']
-
         chatMessage = {}
+
+        if action == "join_room":
+
+            await self.channel_layer.group_add(roomId, self.channel_name)
+            return
 
         if action == 'message':
             message = text_data_json['message']
             userId = text_data_json['user']
-            chatMessage = await self.saveMessage(message, userId, roomId)
+            image = text_data_json.get('image', None)
+            chatMessage = await self.saveMessage(message, userId, roomId, image)
         
         elif action == 'typing':
             chatMessage = text_data_json

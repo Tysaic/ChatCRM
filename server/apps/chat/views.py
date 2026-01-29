@@ -10,6 +10,8 @@ from .models import ChatRoom, ChatMessage
 from apps.user.models import User
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 class ChatRoomListView(APIView):
     #permission_classes = [IsAuthenticated]
@@ -76,7 +78,26 @@ class ChatRoomCreateView(APIView):
         serializer = ChatRoomSerializer(data = data)
 
         if serializer.is_valid():
-            serializer.save()
+            chat_room = serializer.save()
+
+            channel_layer = get_channel_layer()
+            chat_data = ChatRoomSerializer(
+                chat_room, context={'request': request}
+            ).data
+
+            for member_userId in members:
+
+                if str(member_userId) != str(current_userId):
+                    async_to_sync(channel_layer.group_send)(
+                        f'user_{member_userId}',
+                        {
+                            'type': 'chat_message',
+                            'message': {
+                                'action': 'new_chat',
+                                'chat': chat_data
+                            }
+                        }
+                    )
             return Response(serializer.data, status = status.HTTP_201_CREATED)
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
