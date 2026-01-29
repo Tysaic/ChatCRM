@@ -159,34 +159,38 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
         this.ws.onmessage = (event) => {
             
             const data = JSON.parse(event.data);
-            
-            if(data.action === 'new_chat') {
-
-                this.ngZone.run(() => {
-                    const newChat: ChatRoom = {
-                        ...data.chat,
-                        hasUnread:false,
-                        unread_count: 0,
-                        lastMessageAt: new Date()
-                    };
-
-                    const exists = this.chats.some(c => c.roomId === newChat.roomId);
-                    if(!exists) {
-                        this.chats.unshift(newChat);
-                        this.filteredChats = [...this.chats];
-
-                        this.ws?.send(JSON.stringify({
-                            action: 'join_room',
-                            roomId: newChat.roomId    
-                        }));
-                    }
-                });
-                return;
-            }
-
 
             if(data.action === 'message'){
                 this.ngZone.run( () => {
+                    const roomId = data.roomId;
+                    const chatExists = this.chats.some( c => c.roomId === roomId);
+
+                    if(!chatExists){
+                        this.apiService.getUserChats().subscribe({
+                            next: (chats) => {
+                                const newChatData = chats.find((c:any) => c.roomId === roomId);
+
+                                if(newChatData){
+                                    const newChat: ChatRoom = {
+                                        ...newChatData,
+                                        hasUnread: false,
+                                        unread_count: 1,
+                                        lastMessageAt: new Date()
+                                    };
+                                    this.chats.unshift(newChat);
+                                    this.filteredChats = [...this.chats];
+
+                                    this.ws?.send(JSON.stringify({
+                                        action: "join_room",
+                                        roomId: roomId
+                                    }));
+                                }
+                            }
+                        });
+                        return;
+                    }
+
+
                     const isOwnUploadedMessage = data.userId === this.currentUserId &&
                     this.messages.some(m => 
                         m.image === data.image &&

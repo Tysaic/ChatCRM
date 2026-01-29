@@ -35,6 +35,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
         return list(ChatRoom.objects.filter(member=user))
     
     @database_sync_to_async
+    def getRoomMembers(self, roomId):
+        try:
+            room = ChatRoom.objects.get(roomId = roomId)
+            return [member.userId for member in room.member.all()]
+        
+        except ChatRoom.DoesNotExist:
+            return []
+    
+    @database_sync_to_async
     def saveMessage(self, message, userId, roomId, image=None):
 
         userObj = User.objects.get(userId=userId)
@@ -128,6 +137,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
             userId = text_data_json['user']
             image = text_data_json.get('image', None)
             chatMessage = await self.saveMessage(message, userId, roomId, image)
+
+            members = await self.getRoomMembers(roomId)
+
+            for memberUserId in members:
+                await self.channel_layer.group_send(
+                    f'user_{memberUserId}',
+                    {
+                        'type': 'chat_message',
+                        'message': chatMessage
+                    }
+                )
+            return
         
         elif action == 'typing':
             chatMessage = text_data_json
