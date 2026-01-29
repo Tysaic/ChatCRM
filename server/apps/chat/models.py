@@ -3,6 +3,16 @@ from django.db.models import Count
 from shortuuidfield import ShortUUIDField
 from apps.user.models import User
 from django.utils import timezone
+import os
+
+def get_file_upload_path(instance, filename):
+
+    ext = filename.split('.')[-1].lower()
+
+    if ext in ['jpg', 'jpeg', 'png', 'gif', 'webp']:
+        return f'chat_images/{filename}'
+    return f'chat_files/{filename}'
+
 
 class ChatRoom(models.Model):
 
@@ -77,10 +87,19 @@ class ChatMessage(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     message = models.TextField(null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
-    image = models.ImageField(upload_to='tmp/', blank=True, null=True)
+    image = models.ImageField(upload_to='chat_images/', blank=True, null=True)
+    file = models.FileField(upload_to='chat_files/', blank=True, null=True)
+    file_name = models.CharField(max_length=255, null=True, blank=True)
+    file_type = models.CharField(max_length=50, null=True, blank=True)
+    file_size = models.PositiveIntegerField(null=True, blank=True)
 
     def __str__(self):
-        return self.message
+        return self.message or f"File: {self.file_name}" or f"Image: {os.path.basename(self.image.name)}" or "Empty Message"
+    
+    def get_file_extension(self):
+        if self.file_name:
+            return self.file_name.split('.')[-1].lower()
+        return None
 
 class ChatRoomMembership(models.Model):
 
