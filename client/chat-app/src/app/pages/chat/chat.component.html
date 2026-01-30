@@ -284,7 +284,7 @@
                     <div class="chat-conversation p-3 p-lg-4" #chatConversation data-simplebar>
                         <ul class="list-unstyled mb-0">
                             @for (msg of messages; track msg.timestamp) {
-                                @if (msg.message?.trim() || msg.image) {
+                                @if (msg.message?.trim() || msg.image || msg.file) {
                                     <li [ngClass]="msg.userId === currentUserId ? 'right' : 'left'">
                                         <div class="conversation-list">
 
