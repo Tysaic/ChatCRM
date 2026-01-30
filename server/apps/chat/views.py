@@ -12,6 +12,7 @@ from django.db.models import Q, Exists, OuterRef
 from django.shortcuts import get_object_or_404
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from V0X.settings import MAX_FILE_SIZE, ALLOWED_IMAGE_TYPES
 
 class ChatRoomListView(APIView):
     #permission_classes = [IsAuthenticated]
@@ -155,63 +156,7 @@ class MessagesView(ListAPIView):
         context['request'] = self.request
         return context
 
-class UploadChatImageView(APIView):
-    parser_classes = [MultiPartParser, FormParser]
-
-
-    def post(self, request):
-
-        room_id = request.data.get('roomId')
-        image = request.FILES.get('image')
-        message = request.data.get('message', '')
-
-        if not room_id or not image:
-
-            return Response(
-                {"error": "roomId or image not provided."},
-                status = status.HTTP_400_BAD_REQUEST
-            )
-        
-        try:
-            chatroom = ChatRoom.objects.get(roomId = room_id)
-        except ChatRoom.DoesNotExist:
-
-            return Response(
-                {"error": "Chat room does not exists."},
-                status = status.HTTP_404_NOT_FOUND
-            )
-
-        user = User.objects.get(id=request.user.id)
-
-        if not chatroom.member.filter(id=user.id).exists():
-
-            return Response(
-                {"error": "You aren't member of this chat room!"},
-                status = status.HTTP_403_FORBIDDEN
-            )
-        
-        chat_message = ChatMessage.objects.create(
-            room = chatroom,
-            user = user,
-            message = message if message else None,
-            image = image
-        )
-
-        return Response(
-            {
-                "messageId": chat_message.id,
-                "roomId": chatroom.roomId,
-                "message": message,
-                "image": request.build_absolute_uri(chat_message.image.url),
-                "userId": user.userId,
-                "userName": user.username,
-                "userImage": request.build_absolute_uri(user.image.url) if user.image else None,
-                "timestamp": str(chat_message.timestamp)
-            },
-            status = status.HTTP_201_CREATED
-        )
-    
-
+  
 class MarkChatAsReadView(APIView):
 
     def post(self, request, roomId):
@@ -244,3 +189,95 @@ class MarkChatAsReadView(APIView):
         },
         status = status.HTTP_200_OK
         )
+
+class UploadChatFileView(APIView):
+
+    parser_classes = [MultiPartParser, FormParser]
+
+
+    def post(self, request):
+
+        room_id = request.data.get('roomId')
+        uploaded_file = request.FILES.get('file')
+        message = request.data.get('message', '')
+
+        if not room_id:
+            return Response(
+                {"error": "roomId not provided."},
+                status = status.HTTP_400_BAD_REQUEST
+            )
+        
+        if not uploaded_file:
+            return Response(
+                {"error": "file not provided."},
+                status = status.HTTP_400_BAD_REQUEST
+            )
+        
+        if uploaded_file.size > MAX_FILE_SIZE:
+
+            return Response(
+                {"error": f"File size exceeds the maximum limit of {MAX_FILE_SIZE / (1024 * 1024)} MB."},
+                status = status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            chatroom = ChatRoom.objects.get(roomId = room_id)
+        except ChatRoom.DoesNotExist:
+            return Response(
+                {"error": "Chat room does not exists."},
+                status = status.HTTP_404_NOT_FOUND
+            )
+        
+        user = User.objects.get(id=request.user.id)
+
+        if not chatroom.member.filter(id=user.id).exists():
+            return Response(
+                {"error": "You aren't member of this chat room!"},
+                status = status.HTTP_403_FORBIDDEN
+            )
+        
+        content_type = uploaded_file.content_type.split(';')[0].strip()
+        is_image = content_type in ALLOWED_IMAGE_TYPES
+
+        # DEBUG: Verificar qué está llegando
+        print(f"[DEBUG] File name: {uploaded_file.name}")
+        print(f"[DEBUG] Content type: {uploaded_file.content_type}")
+        print(f"[DEBUG] is_image: {is_image}")
+        print(f"[DEBUG] ALLOWED_IMAGE_TYPES: {ALLOWED_IMAGE_TYPES}")
+
+        chat_message = ChatMessage.objects.create(
+            room = chatroom,
+            user = user,
+            message = message if message else None,
+            image = uploaded_file if is_image else None,
+            file = uploaded_file if not is_image else None,
+            file_name = uploaded_file.name if not is_image else None,
+            file_type = content_type if not is_image else None,
+            file_size = uploaded_file.size if not is_image else None
+        )
+
+        # DEBUG: Verificar que se guardó
+        print(f"[DEBUG] Message created with ID: {chat_message.id}")
+        print(f"[DEBUG] chat_message.image: {chat_message.image}")
+        print(f"[DEBUG] chat_message.file: {chat_message.file}")
+
+        response_data = {
+            "messageId": chat_message.id,
+            "roomId": chatroom.roomId,
+            "message": message if message else None,
+            "userId": user.userId,
+            "userName": f"{user.first_name} {user.last_name}",
+            "userImage": request.build_absolute_uri(user.image.url) if user.image else None,
+            "timestamp": str(chat_message.timestamp),
+            "type": "image" if is_image else "file",
+        }
+
+        if is_image:
+            response_data["image"] = request.build_absolute_uri(chat_message.image.url)
+        else:
+            response_data["file"] = request.build_absolute_uri(chat_message.file.url)
+            response_data["fileName"] = chat_message.file_name
+            response_data["fileType"] = chat_message.file_type
+            response_data["fileSize"] = chat_message.file_size
+        
+        return Response(response_data, status = status.HTTP_201_CREATED)

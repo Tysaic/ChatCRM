@@ -1,4 +1,10 @@
-export const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+export const ALLOWED_IMAGE_TYPES = [
+    'image/jpeg', 
+    'image/png', 
+    'image/gif', 
+    'image/webp'
+];
+
 export const ALLOWED_DOC_TYPES = [
     'application/pdf',
     'application/msword',

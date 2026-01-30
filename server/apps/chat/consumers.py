@@ -2,6 +2,7 @@ from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from .models import ChatRoom, ChatMessage
 from apps.user.models import User, OnlineUser
+from django.utils import timezone
 import json
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -128,19 +129,40 @@ class ChatConsumer(AsyncWebsocketConsumer):
         chatMessage = {}
 
         if action == "join_room":
-
             await self.channel_layer.group_add(roomId, self.channel_name)
             return
 
         if action == 'message':
             message = text_data_json['message']
             userId = text_data_json['user']
-            image = text_data_json.get('image', None)
-            chatMessage = await self.saveMessage(message, userId, roomId, image)
+            fromUpload = text_data_json.get('fromUpload', False)
 
+            if fromUpload:
+
+                chatMessage = {
+                    'action': 'message',
+                    'userId': userId,
+                    'roomId': roomId,
+                    'message': message,
+                    'userImage': text_data_json.get('userImage'),
+                    'userName': text_data_json.get('userName'),
+                    'timestamp': str(timezone.now()),
+                    'image': text_data_json.get('image'),
+                    'file': text_data_json.get('file'),
+                    'fileName': text_data_json.get('fileName'),
+                    'fileType': text_data_json.get('fileType'),
+                    'fileSize': text_data_json.get('fileSize'),
+                    'type': text_data_json.get('type', 'text'),
+                }
+            else:
+
+                image = text_data_json.get('image', None)
+                chatMessage = await self.saveMessage(message, userId, roomId, image)
+            
             members = await self.getRoomMembers(roomId)
 
             for memberUserId in members:
+
                 await self.channel_layer.group_send(
                     f'user_{memberUserId}',
                     {
@@ -148,8 +170,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         'message': chatMessage
                     }
                 )
-            return
-        
+            return None
+
         elif action == 'typing':
             chatMessage = text_data_json
         
@@ -160,6 +182,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'message': chatMessage
             }
         )
+            
     
     async def chat_message(self, event):
         message = event['message']

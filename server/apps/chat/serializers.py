@@ -65,15 +65,42 @@ class ChatMessageSerializer(serializers.ModelSerializer):
     userImage = serializers.SerializerMethodField()
     userId = serializers.SerializerMethodField()
     roomId = serializers.CharField(write_only=True)
-    image = serializers.ImageField(required=False, allow_null=True)
+    
+    image = serializers.SerializerMethodField()
+    file = serializers.SerializerMethodField()
+    fileName = serializers.CharField(source="file_name", read_only=True)
+    fileType = serializers.CharField(source="file_type", read_only=True)
+    fileSize = serializers.IntegerField(source="file_size", read_only=True)
 
     class Meta:
 
         model = ChatMessage
-        fields = ['roomId', 'user', 'userId','message', 'timestamp', 'userName', 'userImage', 'image']
+        fields = [
+            'roomId', 'user', 'userId',
+            'message', 'timestamp', 'userName', 
+            'userImage', 'image', 'file',
+            'fileName', 'fileType', 'fileSize'
+        ]
         read_only_fields = ['messageId', 'timestamp', 'userName', 'userImage', 'userId']
 
+    def get_image(self, obj):
+
+        if obj.image:
+            request = self.context.get("request")
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
     
+    def get_file(self, obj):
+
+        if obj.file:
+            request = self.context.get("request")
+            if request:
+                return request.build_absolute_uri(obj.file.url)
+            return obj.file.url
+        return None
+
     def get_userName(self, obj):
         if obj.user:
             return f"{obj.user.first_name} - {obj.user.last_name}"
