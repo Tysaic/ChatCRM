@@ -799,3 +799,23 @@
         font-size: 1.2rem;
     }
 }
+
+// Indicador de busqueda en el input
+.modal-search {
+    .spinner-border-sm {
+        width: 1rem;
+        height: 1rem;
+    }
+
+    .btn-light {
+        &:hover {
+            background-color: #e9ecef;
+        }
+    }
+}
+
+// Mensaje de sugerencia
+.user-list li.bg-light {
+    font-size: 0.85rem;
+    border-bottom: 1px solid #e9ecef;
+}

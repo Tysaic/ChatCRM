@@ -11,27 +11,27 @@ from .serializers import (
     UserSerializer, LoginSerializer, SignupSerializer, 
     ProfileSerializer, ChangePasswordSerializer
 )
+from django.db.models import Q
 
 class UserView(ListAPIView):
 
-    queryset = User.objects.all().order_by('first_name')
     serializer_class = UserSerializer
     pagination_class = LimitOffsetPagination
-    #permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        excludeUserArr = []
 
-        try:
-            excludeUsers = self.request.query_params.get('exclude')
-            if excludeUsers:
-                usersIds = excludeUsers.split(',')
-                for userId in usersIds:
-                    excludeUserArr.append(int(userId))
-        except:
-            return []
-        
-        return super().get_queryset().exclude(id__in=excludeUserArr)
+        queryset = User.objects.all().order_by('first_name')       
+        search = self.request.query_params.get('search', '').strip()
+
+        if search:
+            queryset = queryset.filter(
+                Q(username__icontains = search) |
+                Q(first_name__icontains = search) |
+                Q(last_name__icontains = search) |
+                Q(email__icontains = search )
+            )
+        return queryset
+
     
 
 class LoginApiView(TokenObtainPairView):

@@ -8,7 +8,7 @@ import {
     MAX_FILE_SIZE, selectedFileType 
 } from '../../constants/chat.constants';
 import { Subject } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 interface ChatRoom {
     roomId: string;
@@ -84,6 +84,10 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     hasMoreMessages = true;
     totalMessages = 0;
     private scrollSubject = new Subject<void>();
+    searchingUsers = false;
+    private searchSubject = new Subject<string>();
+    readonly USERS_LIMIT = 10;
+
 
     constructor(
         private apiService: ApiService,
@@ -104,11 +108,19 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
                 this.loadMessages(this.selectedChat.roomId, true);
             }
         })
+
+        this.searchSubject.pipe(
+            debounceTime(300),
+            distinctUntilChanged()
+        ).subscribe(searchTerm => {
+            this.searchUsersFromBackend(searchTerm);
+        });
     }
 
     ngOnDestroy(): void {
         this.ws?.close();
         this.scrollSubject.complete();
+        this.searchSubject.complete()
     }
 
     loadCurrentUser(): void {
@@ -401,6 +413,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     openAddChatModal(): void {
         this.showAddChatModal = true;
         this.userSearchQuery = '';
+        this.filteredUsers = [];
         this.loadUsers();
     }
 
@@ -413,12 +426,15 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
     loadUsers(): void {
         this.loadingUsers = true;
-        const currentUserId = this.currentUserId ? [parseInt(this.currentUserId)] : [];
+        const currentUserId = this.currentUser?.id;
 
-        this.apiService.getUsers(currentUserId).subscribe({
+        this.apiService.getUsers({
+            limit: this.USERS_LIMIT,
+            offset: 0
+        }).subscribe({
             next: (response: any) => {
-                this.allUsers = response;
-                this.filteredUsers = [...this.allUsers];
+                this.filteredUsers = response.results || response;
+                this.allUsers = [...this.filteredUsers];
                 this.loadingUsers = false;
             },
             error: (error) => {
@@ -428,8 +444,41 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
         });
     }
 
-    filterUsers(): void {
+    onUserSearchInput(): void {
         const query = this.userSearchQuery.toLowerCase().trim();
+
+        if(!query){
+            this.filteredUsers = [...this.allUsers];
+            return;
+        }
+
+        if(query.length < 2){
+            this.filterUsers(query);
+        }
+
+        this.searchSubject.next(query);
+    }
+
+    searchUsersFromBackend(searchTerm: string): void {
+        this.searchingUsers = true;
+        const currentUserId = this.currentUser?.id;
+
+        this.apiService.getUsers({
+            search: searchTerm,
+            limit: this.USERS_LIMIT,
+            offset:0
+        }).subscribe({
+            next: (response: any) => {
+                this.filteredUsers = response.results || response;
+                this.searchingUsers = false;
+            }, error: (error) => {
+                console.log("Error searching users: ", error);
+                this.searchingUsers = false;
+            }
+        })
+    }
+
+    filterUsers(query: string): void {
 
         if (!query) {
             this.filteredUsers = [...this.allUsers];

@@ -123,10 +123,31 @@ export class ApiService {
 
    // ========== USERS ==========
 
-   getUsers(exclude?: number[]): Observable<any> {
-    let url = `${this.apiUrl}/v1/users`;
+   getUsers(params: {
+    search?: string;
+    limit?: number;
+    offset?: number;
+   } = {}): Observable<any> {
+      let url = `${this.apiUrl}/v1/users`;
+      const queryParams: string[] = [];
 
-    return this.http.get(url, {headers: this.getAuthHeaders()});
+      if(params.search && params.search.trim()){
+        queryParams.push(`search=${encodeURIComponent(params.search.trim())}`);
+      }
+
+      if(params.limit !== undefined){
+        queryParams.push(`limit=${params.limit}`);
+      }
+
+      if(params.offset !== undefined){
+        queryParams.push(`offset=${params.offset}`);
+      }
+
+      if(queryParams.length > 0){
+        url += `?` + queryParams.join('&');
+      }
+
+      return this.http.get(url, { headers: this.getAuthHeaders() });
    }
 
    // ========== PROFILE ==========
