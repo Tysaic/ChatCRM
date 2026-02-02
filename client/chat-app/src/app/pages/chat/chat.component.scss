@@ -825,3 +825,98 @@
     opacity: 0.7;
     margin-left: 10px;
 }
+
+
+// ...existing code...
+
+// ========== MENSAJES MÁS COMPACTOS - FORZAR ESTILOS ==========
+
+// Forzar espacio reducido entre mensajes
+.chat-conversation {
+    .chat-list {
+        li.chat-list-item,
+        li {
+            margin-bottom: 2px !important; // Muy compacto
+            padding: 2px 0 !important;
+        }
+    }
+
+    ul.list-unstyled {
+        li {
+            margin-bottom: 2px !important;
+            padding: 2px 0 !important;
+        }
+    }
+}
+
+// Reducir padding de las burbujas
+.conversation-list {
+    margin-bottom: 0 !important;
+    padding: 0 !important;
+
+    .ctext-wrap {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .ctext-wrap-content {
+        padding: 6px 12px !important; // Mucho más compacto
+        margin: 0 !important;
+    }
+}
+
+// Forzar estilos en mensajes izquierda y derecha
+.left, .right {
+    margin: 0 !important;
+    padding: 2px 0 !important;
+
+    .conversation-list {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .ctext-wrap {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .ctext-wrap-content {
+        padding: 6px 12px !important;
+        margin: 0 !important;
+    }
+}
+
+// Reducir tamaño de avatar
+.chat-avatar {
+    margin: 0 6px !important;
+    align-self: flex-start;
+
+    img {
+        width: 28px !important;
+        height: 28px !important;
+    }
+}
+
+// Reducir espacio del nombre
+.conversation-name {
+    font-size: 10px !important;
+    font-weight: 600;
+    margin-bottom: 1px !important;
+    line-height: 1.2 !important;
+}
+
+// Reducir espacio del timestamp
+.chat-time {
+    font-size: 9px !important;
+    margin-top: 1px !important;
+    line-height: 1 !important;
+}
+
+// Ajustar contenedor principal
+.chat-conversation-wrapper {
+    .simplebar-content {
+        padding: 10px !important;
+    }
+}
+
+// ...existing code...
