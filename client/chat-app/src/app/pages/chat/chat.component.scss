@@ -6,11 +6,11 @@
     bottom: 120px;
     left: 20px;
     z-index: 999;
-    background: white;
+    background: var(--bs-body-bg);
     border-radius: 12px;
     padding: 8px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--bs-border-color);
     animation: fadeInScale 0.2s ease;
 
     img {
@@ -70,11 +70,28 @@
 .chat-input-section {
     position: sticky;
     bottom: 0;
-    background: #fff;
-    border-top: 1px solid #f0f0f0;
+    background: var(--bs-chat-input-bg, var(--bs-body-bg));
+    border-top: 1px solid var(--bs-border-color);
     padding: 20px;
     z-index: 10;
     margin-top: auto;
+}
+
+// Input de mensaje adaptable al tema
+.chat-message-input {
+    background-color: var(--bs-tertiary-bg) !important;
+    border-color: var(--bs-border-color) !important;
+    color: var(--bs-body-color) !important;
+
+    &::placeholder {
+        color: var(--bs-secondary-color);
+    }
+
+    &:focus {
+        background-color: var(--bs-tertiary-bg) !important;
+        border-color: var(--bs-primary) !important;
+        box-shadow: 0 0 0 0.1rem rgba(var(--bs-primary-rgb), 0.25);
+    }
 }
 
 .image-preview-floating {
@@ -83,11 +100,11 @@
   left: 20px;
   margin-bottom: 10px;
   z-index: 20;
-  
+
   .image-preview {
     position: relative;
     display: inline-block;
-    background: white;
+    background: var(--bs-body-bg);
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     padding: 4px;
@@ -346,7 +363,7 @@
 
 // Contenedor del modal
 .add-chat-modal {
-    background: #fff;
+    background: var(--bs-body-bg);
     border-radius: 12px;
     width: 90%;
     max-width: 450px;
@@ -363,27 +380,27 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem 1.25rem;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid var(--bs-border-color);
 
     .modal-title {
         margin: 0;
         font-size: 1.1rem;
         font-weight: 600;
-        color: #343a40;
+        color: var(--bs-body-color);
     }
 
     .btn-close-modal {
         background: transparent;
         border: none;
         font-size: 1.5rem;
-        color: #6c757d;
+        color: var(--bs-secondary-color);
         cursor: pointer;
         padding: 0;
         line-height: 1;
         transition: color 0.2s;
 
         &:hover {
-            color: #343a40;
+            color: var(--bs-body-color);
         }
     }
 }
@@ -391,7 +408,7 @@
 // Barra de busqueda
 .modal-search {
     padding: 1rem 1.25rem;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid var(--bs-border-color);
 
     .input-group {
         border-radius: 8px;
@@ -399,16 +416,22 @@
     }
 
     .input-group-text {
-        color: #6c757d;
+        color: var(--bs-secondary-color);
+        background-color: var(--bs-tertiary-bg);
     }
 
     .form-control {
+        background-color: var(--bs-tertiary-bg);
+        color: var(--bs-body-color);
+        border-color: var(--bs-border-color);
+
         &:focus {
             box-shadow: none;
+            background-color: var(--bs-tertiary-bg);
         }
 
         &::placeholder {
-            color: #adb5bd;
+            color: var(--bs-secondary-color);
         }
     }
 }
@@ -426,20 +449,20 @@
         padding: 0.875rem 1.25rem;
         cursor: pointer;
         transition: background-color 0.2s;
-        border-bottom: 1px solid #f1f3f5;
+        border-bottom: 1px solid var(--bs-border-color);
 
         &:last-child {
             border-bottom: none;
         }
 
         &:hover {
-            background-color: #f8f9fa;
+            background-color: var(--bs-tertiary-bg);
         }
 
         .user-info {
             h6 {
                 font-size: 0.95rem;
-                color: #343a40;
+                color: var(--bs-body-color);
             }
 
             small {
@@ -687,7 +710,7 @@
     position: absolute;
     bottom: 80px;
     left: 20px;
-    background: white;
+    background: var(--bs-body-bg);
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.15);
     padding: 10px;
@@ -695,6 +718,7 @@
     align-items: center;
     gap: 10px;
     z-index: 100;
+    border: 1px solid var(--bs-border-color);
 
     img {
         max-width: 100px;
@@ -761,7 +785,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: white;
+        background: var(--bs-body-bg);
         border-radius: 8px;
     }
 

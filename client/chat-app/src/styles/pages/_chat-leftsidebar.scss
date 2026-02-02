@@ -5,7 +5,7 @@
 
 .chat-leftsidebar {
     height: 100vh;
-    background-color: $sidebar-sub-bg;
+    background-color: var(--#{$prefix}chat-leftsidebar-bg, $sidebar-sub-bg);
 
     @media (min-width: 992px) {
         min-width: 380px;

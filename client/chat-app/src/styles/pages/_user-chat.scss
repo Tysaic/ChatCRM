@@ -5,7 +5,7 @@
 // user chat
 
 .user-chat {
-    background-color: var(--#{$prefix}white);
+    background-color: var(--#{$prefix}chat-conversation-bg, var(--#{$prefix}white));
     box-shadow: 0 2px 4px rgba(15,34,58,.12);
     transition: all 0.4s;
     @media (max-width: 991.98px) {
@@ -112,18 +112,18 @@
 
         .ctext-wrap-content {
             padding: 12px 20px;
-            background-color: $chat-primary-bg;
+            background-color: var(--#{$prefix}chat-bubble-received, $chat-secondary-bg);
             border-radius: 8px 8px 8px 0;
-            color: $white;
+            color: var(--#{$prefix}chat-bubble-received-text, var(--#{$prefix}dark));
             position: relative;
 
             &:before {
                 content: "";
                 position: absolute;
                 border: 5px solid transparent;
-                border-left-color: $chat-primary-bg;
-                border-top-color: $chat-primary-bg;                
-                left: 0/*rtl:auto*/;                
+                border-left-color: var(--#{$prefix}chat-bubble-received, $chat-secondary-bg);
+                border-top-color: var(--#{$prefix}chat-bubble-received, $chat-secondary-bg);
+                left: 0/*rtl:auto*/;
                 right: auto/*rtl:0*/;
                 bottom: -9px;
             }
@@ -217,19 +217,18 @@
 
                 .ctext-wrap-content {
                     order: 2;
-                    background-color: $chat-secondary-bg;
-                    color: var(--#{$prefix}dark);
+                    background-color: var(--#{$prefix}chat-bubble-sent, $chat-primary-bg);
+                    color: var(--#{$prefix}chat-bubble-sent-text, $white);
                     text-align: right;
                     border-radius: 8px 8px 0px 8px;
 
                     &:before {
                         border: 5px solid transparent;
-                        border-top-color: $chat-secondary-bg;
-                        border-right-color: $chat-secondary-bg;
+                        border-top-color: var(--#{$prefix}chat-bubble-sent, $chat-primary-bg);
+                        border-right-color: var(--#{$prefix}chat-bubble-sent, $chat-primary-bg);
                         left: auto;
                         right: 0px;
                     }
-                    
                 }
             }
 
@@ -259,7 +258,7 @@
 }
 
 .chat-input-section{
-    background-color: $card-bg;
+    background-color: var(--#{$prefix}chat-input-bg, $card-bg);
     @media (max-width: 991.98px) {
         position: fixed;
         left: 0;

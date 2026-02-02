@@ -13,6 +13,7 @@ import {
 } from '../../constants/chat.constants';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { ThemeService } from '../../services/theme.service';
 
 interface ChatRoom {
     roomId: string;
@@ -96,7 +97,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     constructor(
         private apiService: ApiService,
         private router: Router,
-        private ngZone: NgZone
+        private ngZone: NgZone,
+        public themeService: ThemeService
     ) {}
 
     ngOnInit(): void {

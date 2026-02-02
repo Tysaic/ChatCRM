@@ -6,12 +6,12 @@
         <div class="navbar-brand-box">
             <a routerLink="/chat" class="logo logo-dark">
                 <span class="logo-sm">
-                    <img src="assets/images/logo.png" alt="V0X" height="30">
+                    <img src="assets/images/logo-dark.png" alt="V0X" height="30">
                 </span>
             </a>
             <a routerLink="/chat" class="logo logo-light">
                 <span class="logo-sm">
-                    <img src="assets/images/logo.png" alt="V0X" height="30">
+                    <img src="assets/images/logo-light.png" alt="V0X" height="30">
                 </span>
             </a>
         </div>
@@ -32,6 +32,13 @@
                 <li class="nav-item" data-bs-toggle="tooltip" data-bs-placement="top" title="Configuracion">
                     <a class="nav-link" href="javascript:void(0);">
                         <i class="ri-settings-2-line"></i>
+                    </a>
+                </li>
+                <!-- Theme Toggle Button -->
+                <li class="nav-item" data-bs-toggle="tooltip" data-bs-placement="top"
+                    [title]="themeService.isDarkMode() ? 'Modo Claro' : 'Modo Oscuro'">
+                    <a class="nav-link" href="javascript:void(0);" (click)="themeService.toggleTheme()">
+                        <i [class]="themeService.isDarkMode() ? 'ri-sun-line' : 'ri-moon-line'"></i>
                     </a>
                 </li>
             </ul>
@@ -359,7 +366,7 @@
                             <div class="col">
                                 <input
                                     type="text"
-                                    class="form-control form-control-lg bg-light border-light"
+                                    class="form-control form-control-lg chat-message-input"
                                     placeholder="Escribe un mensaje..."
                                     [(ngModel)]="newMessage"
                                     (keyup.enter)="sendMessage()"

@@ -1,9 +1,10 @@
 //
 // root.scss
+// V0X Theme Colors
 //
 
 
-//theme-light
+//theme-light (Version Clara)
 :root,
 [data-bs-theme="light"] {
     --#{$prefix}white-text: #fff;
@@ -15,14 +16,26 @@
     --#{$prefix}card-logo-dark: block;
     --#{$prefix}card-logo-light: none;
 
-    // sidebar
-    --#{$prefix}sidebar-bg: #{$white};
-    --#{$prefix}sidebar-menu-item-color: #878a92;
-    --#{$prefix}sidebar-menu-item-active-color: var(--#{$prefix}primary);
-    --#{$prefix}sidebar-menu-item-active-bg: #f7f7ff;
-    --#{$prefix}sidebar-sub-bg: #f5f7fb;
+    // sidebar - Version Clara
+    --#{$prefix}sidebar-bg: #F2F2F2;
+    --#{$prefix}sidebar-menu-item-color: #495057;
+    --#{$prefix}sidebar-menu-item-active-color: #009FF2;
+    --#{$prefix}sidebar-menu-item-active-bg: #E6E6E6;
+    --#{$prefix}sidebar-sub-bg: #E6E6E6;
 
-    //   // Theme mode icon
+    // Chat colors - Version Clara
+    --#{$prefix}chat-primary-bg: #009FF2;
+    --#{$prefix}chat-secondary-bg: #E6E6E6;
+    --#{$prefix}chat-conversation-bg: #FFFFFF;
+    --#{$prefix}chat-input-bg: #F2F2F2;
+    --#{$prefix}chat-bubble-sent: #009FF2;
+    --#{$prefix}chat-bubble-sent-text: #FFFFFF;
+    --#{$prefix}chat-bubble-received: #E6E6E6;
+    --#{$prefix}chat-bubble-received-text: #212529;
+    --#{$prefix}chat-leftsidebar-bg: #F2F2F2;
+    --#{$prefix}chat-topbar-bg: #FFFFFF;
+
+    // Theme mode icon (sun)
     --#{$prefix}theme-mode-icon: "\eefb";
 
     // accordion
@@ -32,7 +45,7 @@
     // Dropdown
     --#{$prefix}dropdown-bg: #{$white};
 }
-//Theme Dark
+//Theme Dark (Version Oscura)
 @if $enable-dark-mode {
     @include color-mode(dark, true) {
         --#{$prefix}white: #{$white-dark};
@@ -46,21 +59,38 @@
         --#{$prefix}text-muted: #{$text-muted-dark};
         --#{$prefix}text-muted-rgb: #{to-rgb($text-muted-dark)};
 
-        // // sidebar
-        --#{$prefix}sidebar-bg: #{$sidebar-bg-dark};
-        --#{$prefix}sidebar-menu-item-color: #{$sidebar-menu-item-color-dark};
-        --#{$prefix}sidebar-menu-item-active-color: #{$sidebar-menu-item-active-color-dark};
-        --#{$prefix}sidebar-menu-item-active-bg: #{$sidebar-menu-item-active-bg-dark};
-        --#{$prefix}sidebar-sub-bg: #{$sidebar-sub-bg-dark};
+        // sidebar - Version Oscura
+        --#{$prefix}sidebar-bg: #41526B;
+        --#{$prefix}sidebar-menu-item-color: #ADADAD;
+        --#{$prefix}sidebar-menu-item-active-color: #FFFFFF;
+        --#{$prefix}sidebar-menu-item-active-bg: #293D5E;
+        --#{$prefix}sidebar-sub-bg: #293D5E;
+
+        // Chat colors - Version Oscura
+        --#{$prefix}chat-primary-bg: #009FF2;
+        --#{$prefix}chat-secondary-bg: #41526B;
+        --#{$prefix}chat-conversation-bg: #293D5E;
+        --#{$prefix}chat-input-bg: #41526B;
+        --#{$prefix}chat-bubble-sent: #FFFFFF;
+        --#{$prefix}chat-bubble-sent-text: #293D5E;
+        --#{$prefix}chat-bubble-received: #41526B;
+        --#{$prefix}chat-bubble-received-text: #FFFFFF;
+        --#{$prefix}chat-leftsidebar-bg: #41526B;
+        --#{$prefix}chat-topbar-bg: #41526B;
+
+        // Override Bootstrap body backgrounds for dark mode
+        --#{$prefix}body-bg: #293D5E;
+        --#{$prefix}tertiary-bg: #41526B;
+        --#{$prefix}border-color: #4a5d78;
 
         // accordion
-        --#{$prefix}accordion-button-bg: #36404a;
+        --#{$prefix}accordion-button-bg: #41526B;
         --#{$prefix}accordion-bg: transparent;
 
-        //   // Theme mode icon
+        // Theme mode icon (moon)
         --#{$prefix}theme-mode-icon: "\f105";
 
         // Dropdown
-        --#{$prefix}dropdown-bg: #{$dropdown-bg-dark};
+        --#{$prefix}dropdown-bg: #41526B;
     }
 }
