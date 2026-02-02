@@ -159,7 +159,7 @@
     overflow-y: auto;
 }
 
-/* Mensajes propios a la derecha - AZUL */
+/* Mensajes propios a la derecha */
 .right {
     display: flex;
     justify-content: flex-end;
@@ -175,29 +175,32 @@
     }
 
     .ctext-wrap-content {
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+        background-color: var(--bs-chat-bubble-sent, #009FF2) !important;
         border-radius: 18px 18px 4px 18px !important;
-        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 
         p {
-            color: #fff !important;
+            color: var(--bs-chat-bubble-sent-text, #fff) !important;
         }
 
         .chat-time {
-            color: rgba(255, 255, 255, 0.75) !important;
+            color: var(--bs-chat-bubble-sent-text, #fff) !important;
+            opacity: 0.75;
 
             i {
-                color: rgba(255, 255, 255, 0.75) !important;
+                color: var(--bs-chat-bubble-sent-text, #fff) !important;
+                opacity: 0.75;
             }
         }
     }
 
     .conversation-name {
         text-align: right;
+        color: var(--bs-chat-bubble-sent-text, #fff) !important;
     }
 }
 
-/* Mensajes de otros a la izquierda - MORADO */
+/* Mensajes de otros a la izquierda */
 .left {
     display: flex;
     justify-content: flex-start;
@@ -208,21 +211,27 @@
     }
 
     .ctext-wrap-content {
-        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
+        background-color: var(--bs-chat-bubble-received, #E6E6E6) !important;
         border-radius: 18px 18px 18px 4px !important;
-        box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
         p {
-            color: #fff !important;
+            color: var(--bs-chat-bubble-received-text, #212529) !important;
         }
 
         .chat-time {
-            color: rgba(255, 255, 255, 0.75) !important;
+            color: var(--bs-chat-bubble-received-text, #212529) !important;
+            opacity: 0.65;
 
             i {
-                color: rgba(255, 255, 255, 0.75) !important;
+                color: var(--bs-chat-bubble-received-text, #212529) !important;
+                opacity: 0.65;
             }
         }
+    }
+
+    .conversation-name {
+        color: var(--bs-chat-bubble-received-text, #212529) !important;
     }
 }
 
@@ -253,14 +262,14 @@
     opacity: 0.9;
 }
 
-/* Nombre en mensajes propios (azul) */
+/* Nombre en mensajes propios - usa variable del tema */
 .right .conversation-name {
-    color: rgba(255, 255, 255, 0.95) !important;
+    color: var(--bs-chat-bubble-sent-text, #fff) !important;
 }
 
-/* Nombre en mensajes de otros (morado) */
+/* Nombre en mensajes de otros - usa variable del tema */
 .left .conversation-name {
-    color: rgba(255, 255, 255, 0.95) !important;
+    color: var(--bs-chat-bubble-received-text, #212529) !important;
 }
 
 
