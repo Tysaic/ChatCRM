@@ -136,7 +136,8 @@ class MessagesView(ListAPIView):
         serializer = self.get_serializer(data = request.data)
         serializer.is_valid(raise_exception = True)
 
-        room_id = serializer.validated_data.pop('roomId')
+        #room_id = serializer.validated_data.pop('roomId')
+        room_id = self.kwargs.get('roomId')
         chatroom = get_object_or_404(ChatRoom, roomId = room_id)
         user_instance = User.objects.get(id=request.user.id)
 

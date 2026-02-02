@@ -104,8 +104,8 @@ export class ApiService {
 
   sendMessages(roomId: string, message: string, image?: File): Observable<any> {
     if(!image){
-      return this.http.post(`${this.apiUrl}/chats/messages`,
-        { roomId, message },
+      return this.http.post(`${this.apiUrl}/v1/chats/messages/${roomId}`,
+        { message },
         { headers: this.getAuthHeaders() }
       );
     }
@@ -208,7 +208,7 @@ export class ApiService {
 
    markChatAsRead(roomId: string): Observable<any> {
       return this.http.post(
-        `${this.apiUrl}/v1/chats/${roomId}/mark-read`,
+        `${this.apiUrl}/v1/chats/mark-read/${roomId}`,
         {}, { headers: this.getAuthHeaders()}
       )
    }
