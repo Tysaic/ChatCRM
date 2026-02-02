@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework import serializers as drf_serializers
 from rest_framework.generics import ListAPIView
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
@@ -13,6 +14,7 @@ from django.shortcuts import get_object_or_404
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from V0X.settings import MAX_FILE_SIZE, ALLOWED_IMAGE_TYPES
+from drf_spectacular.utils import extend_schema, OpenApiParameter, inline_serializer
 
 class ChatRoomListView(APIView):
     #permission_classes = [IsAuthenticated]
@@ -84,6 +86,13 @@ class ChatRoomCreateView(APIView):
 
 class UserChatRoomView(APIView):
     #permission_classes = [IsAuthenticated]
+    serializer_class = ChatRoomSerializer
+
+    @extend_schema(
+        responses={200: ChatRoomSerializer(many=True)},
+        description="Listing chat users belongs to him or created by him."
+    )
+
     def get(self, request):
 
         user = request.user
@@ -163,6 +172,20 @@ class MessagesView(ListAPIView):
   
 class MarkChatAsReadView(APIView):
 
+    @extend_schema(
+        responses = {
+            200: inline_serializer(
+                name="MarkReadResponse",
+                fields = {
+                    'message': drf_serializers.CharField(),
+                    'roomId': drf_serializers.CharField(),
+                    'last_read_at': drf_serializers.DateTimeField(),
+                }
+            )
+        },
+        description="Mark a chat as read by the current user."
+    )
+
     def post(self, request, roomId):
 
         try:
@@ -198,6 +221,40 @@ class UploadChatFileView(APIView):
 
     parser_classes = [MultiPartParser, FormParser]
 
+    @extend_schema(
+        request = {
+                'multipart/form-data': {
+                'type': 'object',
+                'properties': {
+                    'roomId': {'type': 'string'},
+                    'file': {'type': 'string', 'format': 'binary'},
+                    'message': {'type': 'string'},
+                },
+                'required': ['roomId', 'file']
+            }
+        },
+        responses = {
+                201: inline_serializer(
+                name='UploadFileResponse',
+                fields={
+                    'messageId': drf_serializers.IntegerField(),
+                    'roomId': drf_serializers.CharField(),
+                    'message': drf_serializers.CharField(allow_null=True),
+                    'userId': drf_serializers.CharField(),
+                    'userName': drf_serializers.CharField(),
+                    'userImage': drf_serializers.URLField(allow_null=True),
+                    'timestamp': drf_serializers.DateTimeField(),
+                    'type': drf_serializers.ChoiceField(choices=['image', 'file']),
+                    'image': drf_serializers.URLField(allow_null=True),
+                    'file': drf_serializers.URLField(allow_null=True),
+                    'fileName': drf_serializers.CharField(allow_null=True),
+                    'fileType': drf_serializers.CharField(allow_null=True),
+                    'fileSize': drf_serializers.IntegerField(allow_null=True),
+                }
+            )
+        },
+        description = "Sube una imagen o documento a un chat"
+    )
 
     def post(self, request):
 
@@ -243,12 +300,6 @@ class UploadChatFileView(APIView):
         content_type = uploaded_file.content_type.split(';')[0].strip()
         is_image = content_type in ALLOWED_IMAGE_TYPES
 
-        # DEBUG: Verificar qué está llegando
-        print(f"[DEBUG] File name: {uploaded_file.name}")
-        print(f"[DEBUG] Content type: {uploaded_file.content_type}")
-        print(f"[DEBUG] is_image: {is_image}")
-        print(f"[DEBUG] ALLOWED_IMAGE_TYPES: {ALLOWED_IMAGE_TYPES}")
-
         chat_message = ChatMessage.objects.create(
             room = chatroom,
             user = user,
@@ -260,10 +311,6 @@ class UploadChatFileView(APIView):
             file_size = uploaded_file.size if not is_image else None
         )
 
-        # DEBUG: Verificar que se guardó
-        print(f"[DEBUG] Message created with ID: {chat_message.id}")
-        print(f"[DEBUG] chat_message.image: {chat_message.image}")
-        print(f"[DEBUG] chat_message.file: {chat_message.file}")
 
         response_data = {
             "messageId": chat_message.id,
