@@ -7,6 +7,8 @@ import {
     CHAT_TYPES, ALLOWED_IMAGE_TYPES, ALLOWED_DOC_TYPES, 
     MAX_FILE_SIZE, selectedFileType 
 } from '../../constants/chat.constants';
+import { Subject } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
 interface ChatRoom {
     roomId: string;
@@ -48,39 +50,40 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     // Usuario actual
     currentUser: any = null;
     currentUserId: string | null = null;
-
     // Chats y mensajes
     chats: ChatRoom[] = [];
     filteredChats: ChatRoom[] = [];
     selectedChat: ChatRoom | null = null;
     messages: Message[] = [];
     newMessage = '';
-
     // Búsqueda
     chatSearchQuery = '';
     userSearchQuery = '';
-
     // Modal de usuarios
     showAddChatModal = false;
     allUsers: any[] = [];
     filteredUsers: any[] = [];
     loadingUsers = false;
     filterMode: 'all' | 'unread' = 'all';
-
     // Imágenes
     selectedImage: string | null = null;
     selectedFile: File | null = null;
     selectedFileType: selectedFileType = null;
     imagePreview: string | null = null;
     uploadingImage = false;
-
     // WebSocket
     private ws: WebSocket | null = null;
-
     // Estado y referencias
     private shouldScrollToBottom = false;
     @ViewChild('chatConversation') private chatConversation!: ElementRef;
     @ViewChild('fileInput') fileInput!: ElementRef;
+    // Pagination Chat 
+    messageLimit = 50;
+    messageOffset = 0;
+    loadingMoreMessages = false;
+    hasMoreMessages = true;
+    totalMessages = 0;
+    private scrollSubject = new Subject<void>();
 
     constructor(
         private apiService: ApiService,
@@ -93,10 +96,19 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
         this.loadCurrentUser();
         this.loadChats();
         this.connectWebSocket();
+
+        this.scrollSubject.pipe(
+            debounceTime(2000)
+        ).subscribe( () => {
+            if(this.selectedChat && !this.loadingMoreMessages && this.hasMoreMessages){
+                this.loadMessages(this.selectedChat.roomId, true);
+            }
+        })
     }
 
     ngOnDestroy(): void {
         this.ws?.close();
+        this.scrollSubject.complete();
     }
 
     loadCurrentUser(): void {
@@ -148,14 +160,65 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
             });
         }
 
+        this.messageOffset = 0;
+        this.messages = [];
+        this.hasMoreMessages = true;
         this.loadMessages(chat.roomId);
     }
 
-    loadMessages(roomId: string): void {
-        this.apiService.getMessages(roomId).subscribe({
-            next:(response) => {
-                this.messages = response.results.reverse();
-                this.shouldScrollToBottom = true;
+    onMessagesScroll(event: Event): void {
+        const container = event.target as HTMLElement;
+        
+        if(container.scrollTop < 100 && !this.loadingMoreMessages && this.hasMoreMessages){
+            this.loadMessages(this.selectedChat!.roomId, true);
+        }
+    }
+
+    loadMessages(roomId: string, loadMore=false): void {
+        if (this.loadingMoreMessages || (!loadMore && this.messages.length > 0)) return;
+        if (loadMore && !this.hasMoreMessages) return;
+
+        this.loadingMoreMessages = true;
+
+        if(!loadMore) {
+            this.messageOffset = 0;
+            this.messages = [];
+            this.hasMoreMessages = true;
+        }
+
+        this.apiService.getMessages(roomId, this.messageLimit, this.messageOffset).subscribe({
+            next: (response) => {
+                // Invierte mensajes (backend envia desc, UI necesita ASC)
+                const newMessages = response.results.reverse();
+                this.totalMessages = response.count;
+
+                if(loadMore){
+                    // Guarda altura anterior para preservar posición visual
+                    const container = this.chatConversation?.nativeElement;
+                    const previousHeight = container?.scrollHeight || 0;
+
+                    // Añade mensajes al principio del array
+                    this.messages = [...newMessages, ...this.messages];
+
+                    // Ajusta scroll para mantener visualización
+                    setTimeout(() => {
+                        const newScrollHeight = container.scrollHeight;
+                        container.scrollTop = newScrollHeight - previousHeight;
+                    }, 0);
+                } else {
+                    // Primera carga: scroll automático al final
+                    this.messages = newMessages;
+                    this.shouldScrollToBottom = true;
+                }
+                // Actualiza offset para próxima carga
+                this.messageOffset += this.messageLimit;
+                // Verifica si hay más mensajes
+                this.hasMoreMessages = this.messageOffset < this.totalMessages;
+                this.loadingMoreMessages = false;
+            },
+            error: (error) => {
+                console.error("Error loading messages: ", error);
+                this.loadingMoreMessages = false;
             }
         })
     }

@@ -121,9 +121,12 @@ class MessagesView(ListAPIView):
             if not chatroom.member.filter(username=user_instance).exists():
                 return ChatMessage.objects.none()
             
-            return ChatMessage.objects.filter(
+            
+            query_set = ChatMessage.objects.filter(
                 room__roomId = room_id
             ).select_related('user').order_by('-timestamp')
+
+            return query_set
         
         return ChatMessage.objects.none()
 

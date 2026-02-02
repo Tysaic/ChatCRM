@@ -89,6 +89,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://192.168.1.145:4200",
 ]
 
+## Preview PDF Options to the same origin
+X_FRAME_OPTIONS = 'SAMEORIGIN' 
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -109,6 +111,8 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 50,
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTTokenUserAuthentication',
         #'rest_framework_simplejwt.authentication.JWTAuthentication'
@@ -177,3 +181,4 @@ ALLOWED_DOC_TYPES = [
 
 ALLOWED_FILE_TYPES = ALLOWED_IMAGE_TYPES + ALLOWED_DOC_TYPES
 MAX_FILE_SIZE = 10 * 1024 * 1024 # 10MB
+
