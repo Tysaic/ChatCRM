@@ -1,4 +1,8 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked, NgZone, viewChild } from '@angular/core';
+import { 
+    Component, OnInit, OnDestroy, 
+    ViewChild, ElementRef, AfterViewChecked, 
+    NgZone, viewChild, HostListener
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -725,5 +729,80 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
         return 'ri-file-line'
     }
+
+    @HostListener('document:paste', ['$event'])
+    onPaste(event: ClipboardEvent): void {
+        if(!this.selectedChat) return;
+
+        const clipboardData = event.clipboardData;
+
+        if(!clipboardData) return;
+
+        const items = clipboardData.items;
+
+        for(let i=0; i < items.length; i++){
+            const item = items[i];
+
+            if(item.kind === 'file'){
+                const file = item.getAsFile();
+                if(!file) continue;
+
+                if(this.isValidFileType(file)){
+                    event.preventDefault();
+                    this.handlePastedFile(file);
+                    return;
+                }
+            }
+        }
+
+    }
+
+    isValidFileType(file: File): boolean {
+        const allowedTypes = [
+            // Imagenes
+            'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+            // Documentos
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'text/plain'
+        ];
+
+        return allowedTypes.includes(file.type);
+    }
+
+    handlePastedFile(file: File): void {
+        
+        if(file.size > MAX_FILE_SIZE){
+            alert("¡Archivo excede el peso máximo de 10MB!");
+            return;
+        }
+
+        let fileName = file.name;
+
+        if(fileName === 'image.png' || !fileName) {
+            const timestamp = new Date().toISOString().replace(/[:.-]/g, '-');
+            fileName = `captura-${timestamp}.png`;
+        }
+
+        this.selectedFile = new File([file], fileName, { type: file.type});
+        this.selectedFileType = file.type.startsWith('image/') ? 'image' : 'file';
+
+        if(this.selectedFileType === 'image'){
+            const reader = new FileReader();
+            reader.onload = (e: any) => {
+                this.ngZone.run(() => {
+                    this.imagePreview = e.target?.result as string;
+                });
+            }
+            reader.readAsDataURL(this.selectedFile);
+        } else {
+            this.imagePreview = null;
+        }
+
+    }
+
 
 }

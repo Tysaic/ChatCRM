@@ -252,28 +252,6 @@
                                             </div>
                                         </div>
                                     </li>
-                                    <li class="list-inline-item d-none d-lg-inline-block me-2 ms-0">
-                                        <button type="button" class="btn nav-btn">
-                                            <i class="ri-phone-line"></i>
-                                        </button>
-                                    </li>
-                                    <li class="list-inline-item d-none d-lg-inline-block me-2 ms-0">
-                                        <button type="button" class="btn nav-btn">
-                                            <i class="ri-vidicon-line"></i>
-                                        </button>
-                                    </li>
-                                    <li class="list-inline-item">
-                                        <div class="dropdown">
-                                            <button class="btn nav-btn dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                                <i class="ri-more-fill"></i>
-                                            </button>
-                                            <div class="dropdown-menu dropdown-menu-end">
-                                                <a class="dropdown-item" href="#">Archivar <i class="ri-archive-line float-end text-muted"></i></a>
-                                                <a class="dropdown-item" href="#">Silenciar <i class="ri-volume-mute-line float-end text-muted"></i></a>
-                                                <a class="dropdown-item" href="#">Eliminar <i class="ri-delete-bin-line float-end text-muted"></i></a>
-                                            </div>
-                                        </div>
-                                    </li>
                                 </ul>
                             </div>
                         </div>
@@ -356,6 +334,9 @@
 
                     <!-- Preview flotante de imagen -->
                     <!-- Preview flotante de archivo -->
+                     <small class="text-muted paste-hint d-none d-md-inline">
+                        <i class="ri-clipboard-line"></i> Ctrl+V para pegar imagen
+                    </small>
                     @if (selectedFile) {
                         <div class="floating-file-preview">
                             @if (selectedFileType === 'image' && imagePreview) {
@@ -388,11 +369,6 @@
                             <div class="col-auto">
                                 <div class="chat-input-links ms-md-2 me-md-0">
                                     <ul class="list-inline mb-0">
-                                        <li class="list-inline-item" data-bs-toggle="tooltip" title="Emoji">
-                                            <button type="button" class="btn btn-link text-decoration-none font-size-16 btn-lg waves-effect">
-                                                <i class="ri-emotion-happy-line"></i>
-                                            </button>
-                                        </li>
                                         <li class="list-inline-item" data-bs-toggle="tooltip" title="Adjuntar imagen">
                                             <button
                                                 type="button"
