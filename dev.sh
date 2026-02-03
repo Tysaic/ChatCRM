@@ -4,7 +4,7 @@ PROJECT_ROOT="./";
 ACTIVATE_ENV=".venv/bin/activate";
 SESSION="V0X";
 
-
+tmux kill-session -t $SESSION 2>/dev/null
 tmux new-session -d -s $SESSION
 
 # Angular FrontEnd
@@ -21,5 +21,12 @@ tmux split-window -v -t $SESSION
 tmux send-keys -t $SESSION "source $ACTIVATE_ENV && cd server" C-m
 tmux send-keys -t $SESSION "python3 manage.py runserver 0.0.0.0:4000" C-m
 
-# Attach to session
+# Claude Session
+tmux new-window -d -t $SESSION -n claude
+tmux send-keys -t "$SESSION:claude" "claude" C-m
+
+#Codex Session
+tmux new-window -d -t $SESSION -n codex
+tmux send-keys -t "$SESSION:codex" "codex" C-m
+
 tmux attach-session -t $SESSION
