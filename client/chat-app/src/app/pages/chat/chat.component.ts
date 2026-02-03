@@ -92,7 +92,10 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     searchingUsers = false;
     private searchSubject = new Subject<string>();
     readonly USERS_LIMIT = 10;
-
+    usersOffset = 0;
+    hasMoreUsers = true;
+    totalUsers = 0;
+    loadingMoreUsers = false;
 
     constructor(
         private apiService: ApiService,
@@ -428,30 +431,68 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
         this.userSearchQuery = '';
         this.filteredUsers = [];
         this.allUsers = [];
+        //Reset pagination
+        this.usersOffset = 0;
+        this.hasMoreUsers = true;
+        this.totalUsers = 0;
     }
 
-    loadUsers(): void {
-        this.loadingUsers = true;
-        const currentUserId = this.currentUser?.id;
+    loadUsers(loadMore = false): void {
+
+        if(this.loadingUsers || this.loadingMoreUsers) return;
+        if(loadMore && !this.hasMoreUsers) return;
+
+        if(loadMore){
+            this.loadingMoreUsers = true;
+        } else {
+            this.loadingUsers = true;
+            this.usersOffset = 0;
+            this.allUsers = [];
+            this.hasMoreUsers = true;
+        }
 
         this.apiService.getUsers({
             limit: this.USERS_LIMIT,
-            offset: 0
+            offset: this.usersOffset
         }).subscribe({
             next: (response: any) => {
-                this.filteredUsers = response.results || response;
-                this.allUsers = [...this.filteredUsers];
+                const newUsers = response.results || response;
+                this.totalUsers = response.count || newUsers.length;
+
+                if (loadMore){
+                    const existingIds = new Set(this.allUsers.map( u => u.userId));
+                    const uniqueUsers = newUsers.filter(
+                        (u: any) => !existingIds.has(u.userId)
+                    );
+                    this.allUsers = [...this.allUsers, ...uniqueUsers];
+                } else {
+                    this.allUsers = newUsers;
+                }
+
+                if(this.userSearchQuery.trim()){
+                    this.filterUsers(this.userSearchQuery);
+                } else {
+                    this.filteredUsers = [...this.allUsers];
+                }
+
+                this.usersOffset += this.USERS_LIMIT;
+                this.hasMoreUsers = this.usersOffset < this.totalUsers;
                 this.loadingUsers = false;
+                this.loadingMoreUsers = false;
             },
             error: (error) => {
-                console.error("Error loading users: ", error);
+                console.error("Error Loading Users:", error);
                 this.loadingUsers = false;
+                this.loadingMoreUsers = false;
             }
         });
     }
 
     onUserSearchInput(): void {
         const query = this.userSearchQuery.toLowerCase().trim();
+
+        this.usersOffset = 0;
+        this.hasMoreUsers = true;
 
         if(!query){
             this.filteredUsers = [...this.allUsers];
@@ -465,23 +506,60 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
         this.searchSubject.next(query);
     }
 
-    searchUsersFromBackend(searchTerm: string): void {
-        this.searchingUsers = true;
-        const currentUserId = this.currentUser?.id;
+    searchUsersFromBackend(searchTerm: string, loadMore = false): void {
+        if(this.searchingUsers || this.loadingMoreUsers) return;
+        if(loadMore && !this.hasMoreUsers) return;
+
+        if(loadMore){
+            this.loadingMoreUsers = true;
+        } else {
+            this.searchingUsers = true;
+            this.usersOffset = 0;
+            this.hasMoreUsers = true;
+        }
 
         this.apiService.getUsers({
             search: searchTerm,
             limit: this.USERS_LIMIT,
-            offset:0
+            offset: this.usersOffset
         }).subscribe({
             next: (response: any) => {
-                this.filteredUsers = response.results || response;
+                const newUsers = response.results || response;
+                this.totalUsers = response.count || newUsers.length;
+
+                if(loadMore){
+                    const existingIds = new Set(
+                        this.filteredUsers.map( u=> u.userId )
+                    );
+                    const uniqueUsers = newUsers.filter(
+                        (u: any) => !existingIds.has(u.userId)
+                    );
+                    this.filteredUsers = [...this.filteredUsers, ...uniqueUsers];
+                } else {
+                    this.filteredUsers = newUsers;
+                }
+
+                this.usersOffset += this.USERS_LIMIT;
+                this.hasMoreUsers = this.usersOffset < this.totalUsers;
+
                 this.searchingUsers = false;
-            }, error: (error) => {
-                console.log("Error searching users: ", error);
+                this.loadingMoreUsers = false;
+            },
+            error: (error) => {
+                console.error("Error searching errors:", error);
                 this.searchingUsers = false;
+                this.loadingMoreUsers = false;
             }
-        })
+        });
+
+    }
+
+    loadMoreUsers(): void{
+        if(this.userSearchQuery.trim()){
+            this.searchUsersFromBackend(this.userSearchQuery, true);
+        } else{
+            this.loadUsers(true);
+        }
     }
 
     filterUsers(query: string): void {

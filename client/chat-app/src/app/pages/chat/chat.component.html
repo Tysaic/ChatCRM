@@ -480,7 +480,7 @@
             </div>
 
             <!-- Lista de Usuarios -->
-            <div class="modal-body-custom">
+            <div class="modal-body-custom" #userListContainer>
                 @if (loadingUsers) {
                     <div class="text-center py-4">
                         <div class="spinner-border text-primary" role="status">
@@ -489,7 +489,7 @@
                     </div>
                 } @else if (filteredUsers.length === 0) {
                     <div class="text-center py-4 text-muted">
-                        @if(userSearchQuery){
+                        @if (userSearchQuery) {
                             <i class="ri-user-search-line font-size-24 d-block mb-2"></i>
                             <p class="mb-0">No se encontraron usuarios para "{{ userSearchQuery }}"</p>
                         } @else {
@@ -499,18 +499,20 @@
                     </div>
                 } @else {
                     <ul class="user-list list-unstyled mb-0">
+                        <!-- Indicador de sugeridos -->
                         @if (!userSearchQuery && filteredUsers.length > 0) {
                             <li class="px-3 py-2 bg-light">
                                 <small class="text-muted">
                                     <i class="ri-lightbulb-line me-1"></i>
-                                    Usuarios sugeridos - Escribe para buscar mas
+                                    Mostrando {{ filteredUsers.length }} de {{ totalUsers }} usuarios
                                 </small>
                             </li>
                         }
 
+                        <!-- Lista de usuarios -->
                         @for (user of filteredUsers; track user.userId) {
                             <li class="user-list-item" (click)="startChatWithUser(user)">
-                                <div class="d-flex align-items-center"> 
+                                <div class="d-flex align-items-center">
                                     <!-- Avatar -->
                                     <div class="user-avatar me-3">
                                         @if (user.image) {
@@ -520,7 +522,7 @@
                                         } @else {
                                             <div class="avatar-sm">
                                                 <span class="avatar-title rounded-circle bg-primary-subtle text-primary">
-                                                    {{ user.username.charAt(0).toUpperCase() }}
+                                                    {{ user.username?.charAt(0).toUpperCase() }}
                                                 </span>
                                             </div>
                                         }
@@ -532,11 +534,40 @@
                                         <small class="text-muted">{{ user.username }}</small>
                                     </div>
 
-                                    <!-- Boton Agregar -->
+                                    <!-- Boton Mensaje -->
                                     <button class="btn btn-outline-primary btn-sm">
-                                        <i class="ri-message-2-line me-1"></i>
+                                        <i class="ri-message-2-line"></i>
                                     </button>
                                 </div>
+                            </li>
+                        }
+
+                        <!-- Boton Cargar Mas -->
+                        @if (hasMoreUsers) {
+                            <li class="text-center py-3">
+                                @if (loadingMoreUsers) {
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                        <span class="visually-hidden">Cargando...</span>
+                                    </div>
+                                    <small class="text-muted ms-2">Cargando mas usuarios...</small>
+                                } @else {
+                                    <button
+                                        class="btn btn-outline-secondary btn-sm"
+                                        (click)="loadMoreUsers()">
+                                        <i class="ri-arrow-down-line me-1"></i>
+                                        Cargar mas ({{ totalUsers - filteredUsers.length }} restantes)
+                                    </button>
+                                }
+                            </li>
+                        }
+
+                        <!-- Indicador fin de lista -->
+                        @if (!hasMoreUsers && filteredUsers.length > 0) {
+                            <li class="text-center py-3">
+                                <small class="text-muted">
+                                    <i class="ri-check-double-line me-1"></i>
+                                    Mostrando todos los usuarios
+                                </small>
                             </li>
                         }
                     </ul>

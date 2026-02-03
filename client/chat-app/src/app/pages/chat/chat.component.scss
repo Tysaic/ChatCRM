@@ -952,4 +952,58 @@
     }
 }
 
+// ========== PAGINACION DE CONTACTOS ==========
+
+// Paginacion de contactos
+.modal-body-custom {
+    max-height: 400px;
+    overflow-y: auto;
+
+    .user-list-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+
+        &:hover {
+            background-color: rgba(var(--bs-primary-rgb), 0.08);
+        }
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+
+    // Boton cargar mas
+    .btn-outline-secondary {
+        border-radius: 20px;
+        padding: 6px 16px;
+        font-size: 13px;
+
+        &:hover {
+            background-color: var(--bs-secondary);
+            color: white;
+        }
+    }
+}
+
+// Scroll suave
+.modal-body-custom::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-body-custom::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.modal-body-custom::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+
+    &:hover {
+        background: #a1a1a1;
+    }
+}
+
 // ...existing code...
