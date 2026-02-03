@@ -79,10 +79,23 @@ export class ApiService {
 
   // ========== CHATS ==========
 
-  getUserChats(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/v1/user/chats`, {
-      headers: this.getAuthHeaders()
-    });
+  getUserChats(params?: 
+    { limit?: number; offset?: number}
+  ): Observable<any> {
+    let url = `${this.apiUrl}/v1/user/chats`;
+
+    if(params) {
+      const queryParams = new URLSearchParams();
+
+      if(params.limit) queryParams.append('limit', params.limit.toString());
+      if(params.offset) queryParams.append('offset', params.offset.toString());
+
+      if(queryParams.toString()){
+        url += `?${queryParams.toString()}`;
+      }
+    }
+
+    return this.http.get(url, { headers: this.getAuthHeaders() })
   }
 
   createChat(name: string, type: string, members: number[]): Observable<any> {

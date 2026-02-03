@@ -1,5 +1,60 @@
 /* Estilos del componente Chat - Los estilos principales vienen de la plantilla Chatvia */
 
+// ========== SCROLL INDEPENDIENTE DE CHATS ==========
+
+// Contenedor principal de la lista de chats con scroll
+.chat-message-list {
+    overflow-y: auto;
+    overflow-x: hidden;
+    
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 3px;
+        
+        &:hover {
+            background: rgba(0, 0, 0, 0.3);
+        }
+    }
+}
+
+// Prevenir scroll del body cuando se hace scroll en la lista de chats
+.chat-leftsidebar {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+
+    .tab-content {
+        flex: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+
+        .tab-pane {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+
+            > div {
+                flex: 1;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            }
+        }
+    }
+}
+
 // Preview flotante - Totalmente independiente
 .floating-image-preview {
     position: absolute;
@@ -1003,6 +1058,34 @@
 
     &:hover {
         background: #a1a1a1;
+    }
+}
+
+// ========== PAGINACION DE CHATS ==========
+
+// Paginación de chats
+.chat-list {
+    li.text-center {
+        &.border-top {
+            border-top: 1px solid var(--bs-border-color) !important;
+        }
+
+        .btn-link {
+            text-decoration: none;
+            font-size: 13px;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+}
+
+// Indicador de carga en lista de chats
+.chat-message-list {
+    .spinner-border-sm {
+        width: 1rem;
+        height: 1rem;
     }
 }
 

@@ -37,6 +37,10 @@ class ChatRoom(models.Model):
         blank=True,
         related_name='created_chats'
     )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at']
 
     def __str__(self):
         return self.roomId + "-" + str(self.name)

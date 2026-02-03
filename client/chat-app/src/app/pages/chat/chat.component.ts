@@ -91,11 +91,17 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     private scrollSubject = new Subject<void>();
     searchingUsers = false;
     private searchSubject = new Subject<string>();
-    readonly USERS_LIMIT = 10;
+    readonly USERS_LIMIT = 20;
     usersOffset = 0;
     hasMoreUsers = true;
     totalUsers = 0;
     loadingMoreUsers = false;
+    readonly CHATS_LIMITS = 20;
+    chatsOffset = 0;
+    hasMoreChats = true;
+    totalChats = 0;
+    loadingChats = false;
+    loadingMoreChats = false;
 
     constructor(
         private apiService: ApiService,
@@ -143,27 +149,86 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
         })
     }
 
-    loadChats(): void {
-        this.apiService.getUserChats().subscribe({
-            next: (chats) => {
-                this.chats = chats.map((chat: any) => ({
+    loadChats(loadMore = false): void {
+
+        if(this.loadingChats || this.loadingMoreChats) return;
+        if(loadMore && !this.hasMoreChats) return;
+
+        if(loadMore){
+            this.loadingMoreChats = true;
+        } else{
+            this.loadingChats = true;
+            this.chatsOffset = 0;
+            this.chats = [];
+            this.hasMoreChats = true;
+        }
+
+        this.apiService.getUserChats({
+            limit: this.CHATS_LIMITS,
+            offset: this.chatsOffset
+        }).subscribe({
+            next: (response) => {
+                const newChats = response.results || response;
+                this.totalChats = response.count || newChats.length;
+
+                const mappedChats = newChats.map((chat:any) => ({
                     ...chat,
                     hasUnread: false,
-                    lastMessageAt: new Date()
+                    lastMessageAt: chat.last_message_at ? new Date(chat.last_message_at) : new Date()
                 }));
-                this.filteredChats = [...this.chats];
 
-                if(chats.length > 0 && !this.selectedChat) {
-                    this.selectChat(this.chats[0]);
+                if (loadMore) {
+                    const existingIds = new Set(this.chats.map( c => c.roomId ));
+                    const uniqueChats = mappedChats.filter(
+                        (c: ChatRoom) => !existingIds.has(c.roomId)
+                    );
+                    this.chats = [...this.chats, ...uniqueChats];
+                } else {
+                    this.chats = mappedChats;
+
+                    if (this.chats.length > 0 && !this.selectedChat) {
+                        this.selectChat(this.chats[0]);
+                    }
                 }
+
+
+                this.applyChatsFilter();
+                this.chatsOffset += this.CHATS_LIMITS;
+                this.hasMoreChats = this.chatsOffset < this.totalChats;
+
+                this.loadingChats = false;
+                this.loadingMoreChats = false;
                 this.shouldScrollToBottom = true;
             },
-            error: (err) => {
-                if(err.status === 401) {
+            error: (error) => {
+                console.error("Error loading Chats", error);
+                if(error.status === 401){
                     this.router.navigate(['/login']);
                 }
+                this.loadingChats = false;
+                this.loadingMoreChats = false;
             }
         });
+    }
+
+    loadMoreChats(): void {
+        this.loadChats(true);
+    }
+
+    applyChatsFilter(): void {
+        if (this.filterMode === 'unread'){
+            this.filteredChats = this.chats.filter(chat => chat.unread_count > 0 );
+        } else if(this.chatSearchQuery.trim()) {
+            const query = this.chatSearchQuery.toLowerCase();
+
+            this.filteredChats = this.chats.filter( chat => {
+                const displayName = this.getChatDisplayName(chat).toLowerCase();
+                return displayName.includes(query);
+            })
+
+        } else{
+            this.filteredChats = [...this.chats];
+        }
     }
 
     selectChat(chat: ChatRoom): void {
@@ -259,19 +324,23 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
                     const chatExists = this.chats.some( c => c.roomId === roomId);
 
                     if(!chatExists){
-                        this.apiService.getUserChats().subscribe({
-                            next: (chats) => {
-                                const newChatData = chats.find((c:any) => c.roomId === roomId);
+                        this.apiService.getUserChats({ limit:1, offset:0 }).subscribe({
+                            next: (response) => {
+                                const newChats = response.results || response;
+                                const newChatData = newChats.find((c:any) => c.roomId === roomId);
+
 
                                 if(newChatData){
                                     const newChat: ChatRoom = {
                                         ...newChatData,
-                                        hasUnread: false,
+                                        hasUnread: true,
                                         unread_count: 1,
                                         lastMessageAt: new Date()
                                     };
+
                                     this.chats.unshift(newChat);
-                                    this.filteredChats = [...this.chats];
+                                    this.totalChats++;
+                                    this.applyChatsFilter();
 
                                     this.ws?.send(JSON.stringify({
                                         action: "join_room",
@@ -580,32 +649,14 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     filterByUnread(): void {
         if(this.filterMode === 'unread'){
             this.filterMode = 'all';
-            this.filteredChats = [...this.chats];
         } else {
             this.filterMode = 'unread';
-            this.filteredChats = this.chats.filter(
-                chat => chat.unread_count > 0
-            );
         }
+        this.applyChatsFilter();
     }
 
     filtersChats(): void {
-        const query = this.chatSearchQuery.toLowerCase().trim();
-
-
-        let baseChats = this.filterMode === 'unread'
-        ? this.chats.filter(chat => chat.unread_count > 0)
-        : [... this.chats];
-        
-        if (!query) {
-            this.filteredChats = baseChats;
-            return;
-        }
-
-        this.filteredChats = baseChats.filter(chat => {
-            const displayName = this.getChatDisplayName(chat).toLowerCase();
-            return displayName.includes(query);
-        });
+        this.applyChatsFilter();
     }
 
     get totalUnreadCount(): number {
@@ -629,20 +680,27 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
             next: (response:any) => {
                 const newRoomId = response.roomId || response.chat?.roomId;
 
-                this.apiService.getUserChats().subscribe({
-                    next: (chats) => {
-                        this.chats = chats.map((chat: any) => ({
+                this.apiService.getUserChats({ limit: this.CHATS_LIMITS, offset: 0}).subscribe({
+                    next: (response) => {
+                        const chatsData = response.results || response;
+                        
+                        this.chats = chatsData.map((chat: any) => ({
                             ...chat,
                             hasUnread: false,
-                            lastMessageAt: new Date()
+                            lastMessageAt: chat.last_message_at ? new Date(chat.last_message_at) : new Date()
                         }));
-                        this.filteredChats = [...this.chats];
+                        
+                        this.totalChats = response.count || chatsData.length;
+                        this.applyChatsFilter();
 
                         const newChat = this.chats.find( (c: ChatRoom) => c.roomId === newRoomId);
                         if(newChat){
                             this.selectChat(newChat);
                             this.reconnectWebSocket();
                         }
+                    },
+                    error: (error) => {
+                        console.error("Error loading chats after creation:", error);
                     }
                 });
                 this.closeAddChatModal();
