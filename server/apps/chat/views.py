@@ -16,6 +16,11 @@ from asgiref.sync import async_to_sync
 from V0X.settings import MAX_FILE_SIZE, ALLOWED_IMAGE_TYPES
 from drf_spectacular.utils import extend_schema, OpenApiParameter, inline_serializer
 
+class ChatRoomPagination(LimitOffsetPagination):
+
+    default_limit = 10
+    max_limit = 50
+
 class ChatRoomListView(APIView):
     #permission_classes = [IsAuthenticated]
 
@@ -84,35 +89,31 @@ class ChatRoomCreateView(APIView):
             return Response(serializer.data, status = status.HTTP_201_CREATED)
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
-class UserChatRoomView(APIView):
-    #permission_classes = [IsAuthenticated]
+class UserChatRoomView(ListAPIView):
     serializer_class = ChatRoomSerializer
+    pagination_class = ChatRoomPagination
+    #permission_classes = [IsAuthenticated]
 
-    @extend_schema(
-        responses={200: ChatRoomSerializer(many=True)},
-        description="Listing chat users belongs to him or created by him."
-    )
+    def get_queryset(self):
 
-    def get(self, request):
-
-        user = request.user
+        user = self.request.user
         user_instance = User.objects.get(id=user.id)
 
-        has_messages = ChatMessage.objects.filter(room = OuterRef('pk'))
+        has_messages = ChatMessage.objects.filter(room=OuterRef('pk'))
 
-        chatRooms = ChatRoom.objects.filter(
+        return ChatRoom.objects.filter(
             member = user_instance
         ).annotate(
             has_messages = Exists(has_messages)
         ).filter(
-            Q(has_messages = True) | Q(created_by = user_instance)
-        ).distinct()
+            Q(has_messages=True) | Q(created_by=user_instance)
+        ).distinct().order_by('-updated_at')
+    
+    def get_serializer_context(self):
 
-        serializer = ChatRoomSerializer(
-            chatRooms, many=True, context={'request': request}
-        )
-
-        return Response(serializer.data, status = status.HTTP_200_OK)
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
 class MessagesView(ListAPIView):
     serializer_class = ChatMessageSerializer
