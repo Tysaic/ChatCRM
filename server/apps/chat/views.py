@@ -146,7 +146,7 @@ class MessagesView(ListAPIView):
         serializer = self.get_serializer(data = request.data)
         serializer.is_valid(raise_exception = True)
 
-        #room_id = serializer.validated_data.pop('roomId')
+        serializer.validated_data.pop('roomId')
         room_id = self.kwargs.get('roomId')
         chatroom = get_object_or_404(ChatRoom, roomId = room_id)
         user_instance = User.objects.get(id=request.user.id)
@@ -159,6 +159,27 @@ class MessagesView(ListAPIView):
         
         image = request.FILES.get('image', None)
         message = serializer.save(user = user_instance, room=chatroom, image=image)
+
+        channel_layer = get_channel_layer()
+        members = chatroom.member.all()
+
+        for member in members:
+            async_to_sync(channel_layer.group_send)(
+                f"user_{member.userId}",
+                {
+                    'type': 'chat_message',
+                    'message': {
+                    'action': 'message',
+                    'userId': user_instance.userId,
+                    'roomId': room_id,
+                    'message': message.message,
+                    'userName': f"{user_instance.first_name} {user_instance.last_name}",
+                    'userImage': user_instance.image.url if user_instance.image else None,
+                    'timestamp': str(message.timestamp),
+                    'image': None,
+                    }
+                }
+            )
 
         response_serializer = self.get_serializer(message)
 
