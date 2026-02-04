@@ -3,11 +3,12 @@ from django.db import transaction
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from apps.user.models import User
+from apps.user.models import User, UserType, ApiKey
 from apps.chat.models import ChatRoom
 from django.contrib.auth import authenticate
 from django.utils.translation import gettext_lazy as lazy
-
+from rest_framework_simplejwt.tokens import RefreshToken
+import uuid
 
 class UserSerializer(serializers.ModelSerializer):
 
@@ -62,7 +63,9 @@ class LoginSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
-        token['userId'] = user.id
+        #del token['user_id']
+        token['username'] = user.username
+        token['userId'] = user.userId
         return token
 
 class SignupSerializer(serializers.ModelSerializer):
@@ -196,3 +199,103 @@ class ChangePasswordSerializer(serializers.Serializer):
         main_user.save()
 
         return main_user
+
+
+class GuestAuthSerializer(serializers.Serializer):
+
+    email = serializers.EmailField(required=True, allow_blank=False)
+    first_name = serializers.CharField(required=True, allow_blank=False)
+    last_name = serializers.CharField(required=True, allow_blank=False)
+    metadata = serializers.JSONField(required=False, allow_null=True)
+
+
+    def __init__(self, *args, **kwargs):
+
+        self.api_key = kwargs.pop('api_key', None)
+        super().__init__(*args, **kwargs)
+
+    def validate(self, attrs):
+
+        email = attrs.get('email', '').strip()
+        
+        if not email:
+            raise serializers.ValidationError({
+                'email': 'Email is required.'
+            })
+        
+        attrs['email'] = email
+
+        return attrs
+    
+    def get_or_created_guest(self, validated_data):
+
+        email = validated_data.get('email')
+        first_name = validated_data.get('first_name')
+        last_name = validated_data.get('last_name')
+
+        username = None
+        created = False
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            user = None
+        
+        if not user:
+
+            user_preffix = uuid.uuid4().hex[:8]
+            base_username = email.split('@')[0]
+            username = f"{base_username}_{user_preffix}"
+            user_type = UserType.objects.get(code='GUEST')
+
+            user = User.objects.create(
+                username=username,
+                email=email,
+                first_name = first_name,
+                last_name = last_name,
+                user_type = user_type,
+                is_active = True
+            )
+
+            user.set_password(uuid.uuid4().hex)
+            user.save()
+
+            created = True
+        
+        return user, created
+    
+    def generate_tokens(self, user):
+
+        refresh = RefreshToken.for_user(user)
+        refresh['userId'] = str(user.userId)
+        refresh['user_type'] = user.get_type_code()
+
+        return {
+            'refresh': str(refresh),
+            'access_token': str(refresh.access_token)
+        }
+
+    def authenticate(self):
+
+        user, created = self.get_or_created_guest(self.validated_data)
+        tokens = self.generate_tokens(user)
+
+        return {
+            **tokens,
+            'userId': str(user.userId),
+            'user_type': user.get_type_code(),
+            'is_new_user': created,
+            'user': {
+                'userId': str(user.userId),
+                'username': user.username,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'user_type': user.get_type_code(),
+            }
+        }
+
+
+
+
+        
