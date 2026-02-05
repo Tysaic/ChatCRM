@@ -64,7 +64,7 @@ class ChatMessageSerializer(serializers.ModelSerializer):
     userName = serializers.SerializerMethodField()
     userImage = serializers.SerializerMethodField()
     userId = serializers.SerializerMethodField()
-    roomId = serializers.CharField(write_only=True)
+    roomId = serializers.CharField(write_only=True, required=False)
     
     image = serializers.SerializerMethodField()
     file = serializers.SerializerMethodField()

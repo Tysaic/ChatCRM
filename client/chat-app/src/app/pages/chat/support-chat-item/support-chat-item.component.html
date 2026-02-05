@@ -1,46 +1,53 @@
 <!-- support-chat-item/support-chat-item.component.html -->
 
-<div class="support-chat-item" [class.taken]="isTaken">
+<li [class.active]="isSelected"
+    [class.taken]="isTaken"
+    (click)="select.emit(chat)">
+    <a href="javascript:void(0);">
+        <div class="d-flex">
+            <!-- Avatar -->
+            <div class="chat-user-img online align-self-center me-3 ms-0">
+                @if (chat.guest_user?.image) {
+                    <img [src]="chat.guest_user?.image" class="rounded-circle avatar-xs" alt="">
+                } @else {
+                    <div class="avatar-xs">
+                        <span class="avatar-title rounded-circle bg-primary-subtle text-primary">
+                            {{ chat.name.charAt(0).toUpperCase() }}
+                        </span>
+                    </div>
+                }
+                <span class="user-status"></span>
+            </div>
 
-  <!-- Información del usuario guest -->
-  <div class="user-info">
-    <img
-      [src]="chat.guest_user?.image || 'assets/default-avatar.png'"
-      [alt]="chat.name"
-      class="avatar">
-    <div class="details">
-      <strong class="name">{{ chat.name }}</strong>
-      <small class="last-message">{{ chat.last_message }}</small>
-    </div>
-  </div>
+            <!-- Info del chat -->
+            <div class="flex-grow-1 overflow-hidden">
+                <h4 class="text-truncate font-size-15 mb-1">{{ chat.name }}</h4>
+                <p class="text-muted text-truncate font-size-13 mb-1">{{ chat.last_message || 'Sin mensajes' }}</p>
+                
+                <!-- Estado -->
+                @if (!isTaken) {
+                    <span class="badge bg-warning text-dark font-size-10">Pendiente</span>
+                } @else {
+                    <span class="badge bg-success font-size-10">{{ agentName }}</span>
+                }
+            </div>
 
-  <!-- Estado del chat -->
-  <div class="status">
-    <span *ngIf="!isTaken" class="pending">
-      Pendiente
-    </span>
-    <span *ngIf="isTaken" class="taken-by">
-      Atendido por: {{ agentName }}
-    </span>
-  </div>
-
-  <!-- Botones de acción -->
-  <div class="actions">
-    <!-- Botón Tomar: emite evento hacia el padre -->
-    <button
-      *ngIf="!isTaken"
-      class="btn-take"
-      (click)="take.emit()">
-      Tomar
-    </button>
-
-    <!-- Botón Liberar: emite evento hacia el padre -->
-    <button
-      *ngIf="isTaken"
-      class="btn-release"
-      (click)="release.emit()">
-      Liberar
-    </button>
-  </div>
-
-</div>
+            <!-- Acciones -->
+            <div class="chat-meta text-end align-self-center">
+                @if (!isTaken) {
+                    <button 
+                        class="btn btn-sm btn-primary"
+                        (click)="onTake($event)">
+                        Tomar
+                    </button>
+                } @else {
+                    <button 
+                        class="btn btn-sm btn-outline-danger"
+                        (click)="onRelease($event)">
+                        Liberar
+                    </button>
+                }
+            </div>
+        </div>
+    </a>
+</li>

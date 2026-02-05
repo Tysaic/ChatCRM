@@ -128,10 +128,10 @@ class MessagesView(ListAPIView):
 
     def get_queryset(self):
 
-        room_id = self.kwargs.get('roomId')
+        roomId = self.kwargs.get('roomId')
 
-        if room_id:
-            chatroom = get_object_or_404(ChatRoom, roomId = room_id)
+        if roomId:
+            chatroom = get_object_or_404(ChatRoom, roomId = roomId)
             user_instance = User.objects.get(id=self.request.user.id)
 
             if not chatroom.member.filter(username=user_instance).exists():
@@ -139,7 +139,7 @@ class MessagesView(ListAPIView):
             
             
             query_set = ChatMessage.objects.filter(
-                room__roomId = room_id
+                room__roomId = roomId
             ).select_related('user').order_by('-timestamp')
 
             return query_set
@@ -147,14 +147,11 @@ class MessagesView(ListAPIView):
         return ChatMessage.objects.none()
 
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, roomId):
 
         serializer = self.get_serializer(data = request.data)
         serializer.is_valid(raise_exception = True)
-
-        serializer.validated_data.pop('roomId')
-        room_id = self.kwargs.get('roomId')
-        chatroom = get_object_or_404(ChatRoom, roomId = room_id)
+        chatroom = get_object_or_404(ChatRoom, roomId = roomId)
         user_instance = User.objects.get(id=request.user.id)
 
         if not chatroom.member.filter(id=user_instance.id).exists():
@@ -178,7 +175,7 @@ class MessagesView(ListAPIView):
                     'action': 'message',
                     'userId': user_instance.userId,
                     'chatType': chatroom.type,
-                    'roomId': room_id,
+                    'roomId': roomId,
                     'message': message.message,
                     'userName': f"{user_instance.first_name} {user_instance.last_name}",
                     'userImage': user_instance.image.url if user_instance.image else None,
@@ -285,18 +282,11 @@ class UploadChatFileView(APIView):
         description = "Sube una imagen o documento a un chat"
     )
 
-    def post(self, request):
+    def post(self, request, roomId):
 
-        room_id = request.data.get('roomId')
         uploaded_file = request.FILES.get('file')
         message = request.data.get('message', '')
-
-        if not room_id:
-            return Response(
-                {"error": "roomId not provided."},
-                status = status.HTTP_400_BAD_REQUEST
-            )
-        
+       
         if not uploaded_file:
             return Response(
                 {"error": "file not provided."},
@@ -311,7 +301,7 @@ class UploadChatFileView(APIView):
             )
         
         try:
-            chatroom = ChatRoom.objects.get(roomId = room_id)
+            chatroom = ChatRoom.objects.get(roomId = roomId)
         except ChatRoom.DoesNotExist:
             return Response(
                 {"error": "Chat room does not exists."},
@@ -367,12 +357,6 @@ class SupportChatsListView(APIView):
     def get(self, request):
 
         user = request.user
-
-        if user.is_guest():
-            return Response(
-                {'error': "Guests are not allowed to access support chats."},
-                status = status.HTTP_403_FORBIDDEN
-            )
         
         ChatRoom.objects.filter(
             type = ChatRoom.ChatType.SUPPORT,
@@ -395,13 +379,7 @@ class TakeReleaseChatView(APIView):
 
     def post(self, request, roomId, action):
 
-        user = request.user
-
-        if user.is_guest():
-            return Response(
-                {'error': "Guests are not allowed to take or release support chats."},
-                status = status.HTTP_403_FORBIDDEN
-            )
+        user = User.objects.get(id=request.user.id)
         
         chat = get_object_or_404(
             ChatRoom, 
@@ -417,24 +395,24 @@ class TakeReleaseChatView(APIView):
                         "error": "This chat is already taken by another agent.",
                     }, status = status.HTTP_409_CONFLICT)
 
-                chat.assigned_agent = user
-                chat.taken_at = timezone.now()
+            chat.assigned_agent = user
+            chat.taken_at = timezone.now()
 
-                if not chat.member.filter(id = user.id).exists():
-                    chat.member.add(user)
-                chat.save()
+            if not chat.member.filter(id = user.id).exists():
+                chat.member.add(user)
+            chat.save()
 
-                return Response(
-                    {
-                        'message': "Chat taken successfully.",
-                        'roomId': roomId,
-                    },
-                    status = status.HTTP_200_OK
-                )
+            return Response(
+                {
+                    'message': "Chat taken successfully.",
+                    'roomId': roomId,
+                },
+                status = status.HTTP_200_OK
+            )
         
         elif action == 'release':
 
-            if chat.assigned_agent != user or user.is_admin():
+            if chat.assigned_agent == user or user.is_admin():
                 chat.assigned_agent = None
                 chat.taken_at = None
                 chat.save()
@@ -448,3 +426,8 @@ class TakeReleaseChatView(APIView):
                 {"error": "You cannot release a chat you haven't taken."},
                 status = status.HTTP_403_FORBIDDEN
             )
+        
+        return Response(
+            {"error": "Invalid action. Use 'take' or 'release'."},
+            status = status.HTTP_400_BAD_REQUEST
+        )

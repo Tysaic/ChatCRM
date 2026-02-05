@@ -28,6 +28,8 @@ export class SupportChatItemComponent {
 
     @Output() take = new EventEmitter<string>();
 
+    @Output() select = new EventEmitter<SupportChat>();
+
     @Output() release = new EventEmitter<string>();
 
     get isTaken(): boolean {
@@ -35,6 +37,17 @@ export class SupportChatItemComponent {
     }
 
     get agentName(): string {
-        return this.chat.assigned_agent_info?.name || 'Agent';
+        return this.chat.assigned_agent_info?.name || 'Agente';
     }
+
+    onTake(event: Event): void {
+        event.stopPropagation();
+        this.take.emit(this.chat.roomId);
+    }
+
+    onRelease(event: Event): void {
+        event.stopPropagation();
+        this.release.emit(this.chat.roomId);
+    }
+
 }
