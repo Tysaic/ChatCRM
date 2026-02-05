@@ -1,0 +1,46 @@
+<!-- support-chat-item/support-chat-item.component.html -->
+
+<div class="support-chat-item" [class.taken]="isTaken">
+
+  <!-- Información del usuario guest -->
+  <div class="user-info">
+    <img
+      [src]="chat.guest_user?.image || 'assets/default-avatar.png'"
+      [alt]="chat.name"
+      class="avatar">
+    <div class="details">
+      <strong class="name">{{ chat.name }}</strong>
+      <small class="last-message">{{ chat.last_message }}</small>
+    </div>
+  </div>
+
+  <!-- Estado del chat -->
+  <div class="status">
+    <span *ngIf="!isTaken" class="pending">
+      Pendiente
+    </span>
+    <span *ngIf="isTaken" class="taken-by">
+      Atendido por: {{ agentName }}
+    </span>
+  </div>
+
+  <!-- Botones de acción -->
+  <div class="actions">
+    <!-- Botón Tomar: emite evento hacia el padre -->
+    <button
+      *ngIf="!isTaken"
+      class="btn-take"
+      (click)="take.emit()">
+      Tomar
+    </button>
+
+    <!-- Botón Liberar: emite evento hacia el padre -->
+    <button
+      *ngIf="isTaken"
+      class="btn-release"
+      (click)="release.emit()">
+      Liberar
+    </button>
+  </div>
+
+</div>

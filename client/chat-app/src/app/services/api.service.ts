@@ -245,5 +245,31 @@ export class ApiService {
       { headers: headers }
     );
   }
+
+  // ══════════════════════════════════════════════════════════
+  // Support Methos (ADD)
+  // ══════════════════════════════════════════════════════════
+  getSupportChats(): Observable<any> {
+    return this.http.get(
+      `${this.apiUrl}/v1/chats/support/`,
+      {headers: this.getAuthHeaders()}
+    );
+  }
+
+  takeSupportChat(roomId: string): Observable<any> {
+    return this.http.post(
+      `${this.apiUrl}/v1/chats/support/${roomId}/take`,
+      {},
+      {headers: this.getAuthHeaders()}
+    );
+  }
+
+  releaseSupportChat(roomId: string): Observable<any> {
+    return this.http.post(
+      `${this.apiUrl}/v1/chats/support/${roomId}/release`,
+      {},
+      {headers: this.getAuthHeaders()}
+    );
+  }
 }
 

@@ -1,0 +1,73 @@
+// chat-tabs/chat-tabs.component.scss
+
+.tabs-container {
+  display: flex;
+  border-bottom: 1px solid #e0e0e0;
+
+  button {
+    flex: 1;
+    padding: 12px 16px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.2s;
+
+    &.active {
+      color: #1976d2;
+      border-bottom: 2px solid #1976d2;
+    }
+
+    &.has-notification {
+      color: #f44336;
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 8px;
+        height: 8px;
+        background: #f44336;
+        border-radius: 50%;
+        animation: pulse 1s infinite;
+      }
+    }
+
+    .badge {
+      background: #f44336;
+      color: white;
+      border-radius: 10px;
+      padding: 2px 6px;
+      font-size: 11px;
+      margin-left: 4px;
+    }
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+// Tema oscuro
+:host-context([data-bs-theme="dark"]) {
+  .tabs-container {
+    border-bottom-color: #444;
+
+    button {
+      color: #ccc;
+
+      &.active {
+        color: #fff;
+        border-bottom-color: #64b5f6;
+      }
+
+      &.has-notification {
+        color: #ff6b6b;
+      }
+    }
+  }
+}

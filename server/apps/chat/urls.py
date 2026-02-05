@@ -17,6 +17,6 @@ urlpatterns = [
     path('chats/messages/upload-file', UploadChatFileView.as_view(), name="upload-chat-file"),  # POST
     path("chats/messages/<str:roomId>", MessagesView.as_view(), name="list-chat-messages"), # GET
     path('chats/mark-read/<str:roomId>', MarkChatAsReadView.as_view(), name="mark-chat-as-read"), #POST
-    path('support/', SupportChatsListView.as_view(), name = "support-chats-list"),
-    path('support/<str:roomId>/<str:action>', TakeReleaseChatView.as_view(), name="take-release-chat"),
+    path('chats/support/', SupportChatsListView.as_view(), name = "support-chats-list"),
+    path('chats/support/<str:roomId>/<str:action>', TakeReleaseChatView.as_view(), name="take-release-chat"),
 ]

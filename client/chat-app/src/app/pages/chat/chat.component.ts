@@ -14,6 +14,8 @@ import {
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ThemeService } from '../../services/theme.service';
+import { ChatTabsComponent } from './chat-tabs/chat-tabs.component';
+import { SupportChatItemComponent } from './support-chat-item/support-chat-item.component';
 
 interface ChatRoom {
     roomId: string;
@@ -24,6 +26,8 @@ interface ChatRoom {
     unread_count: number;
     last_message: string | null;
     lastMessageAt?: Date;
+    assigned_agent?: string;
+    assigned_agent_info?: { name: string; image?: string}
 }
 
 interface Message {
@@ -41,10 +45,17 @@ interface Message {
     type: 'image' | 'file' | 'text';
 }
 
+
 @Component({
     selector: 'app-chat',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule],
+    imports:[
+        CommonModule,
+        FormsModule,
+        RouterModule,
+        ChatTabsComponent,
+        SupportChatItemComponent,
+    ],
     templateUrl: './chat.component.html',
     styleUrls: ['./chat.component.scss']
 })
@@ -102,6 +113,12 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     totalChats = 0;
     loadingChats = false;
     loadingMoreChats = false;
+    //Support Chats
+    activeTab: 'internal' | 'support' = 'internal';
+    supportChats: ChatRoom[] = [];
+    filteredSupportChats: ChatRoom[] = [];
+    supportUnreadCount = 0;
+    loadingSupportChats = false;
 
     constructor(
         private apiService: ApiService,
@@ -383,6 +400,15 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
                     this.moveChatToTop(data.roomId);
                 });
+            }
+
+            if(data.chatType === 'SUPPORT' || this.isSupportChat(data.roomId)){
+                if(this.activeTab !== 'support') {
+                    this.supportUnreadCount++;
+                }
+                this.loadSupportChats();
+            } else{
+                this.incrementUnreadCount(data.roomId);
             }
         }
 
@@ -942,5 +968,64 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
     }
 
+    loadSupportChats(): void {
+        this.loadingSupportChats = true;
+
+        this.apiService.getSupportChats().subscribe({
+            next: (response) => {
+                const chats = response.result || response;
+                this.supportChats = chats.map((chat: any) => ({
+                    ...chat,
+                    hasUnread: false,
+                    lastMessageAt: chat.last_message_at ? new Date(chat.last_message_at) : new Date()
+                }));
+                this.filteredSupportChats = [...this.supportChats];
+                this.loadingSupportChats = false;
+            },
+            error: (error) => {
+                console.error("Error loading support chats:", error);
+                this.loadingSupportChats = false;
+            }
+        })
+    }
+
+    onTabChange(tab: 'internal' | 'support'): void {
+        this.activeTab = tab;
+
+        if(tab === 'support') {
+            this.supportUnreadCount = 0;
+            this.loadSupportChats();
+        }
+    }
+
+    onTakeChat(roomId: string): void {
+        this.apiService.takeSupportChat(roomId).subscribe({
+            next: () => {
+                this.loadSupportChats();
+                const chat = this.supportChats.find( c => c.roomId === roomId);
+                if (chat)  this.selectChat(chat);
+            },
+            error: (err) => {
+                console.error('Error taking support chat:', err);
+                alert('Error taking support chat. Please try again.');
+            }
+        });
+    }
+
+    onReleaseChat(roomId: string): void {
+        this.apiService.releaseSupportChat(roomId).subscribe({
+            next: () => {
+                this.loadSupportChats();
+            },
+            error: (err) => {
+                console.error('Error releasing support chat:', err);
+                alert('Error releasing support chat. Please try again.')
+            }
+        })
+    }
+
+    private isSupportChat(roomId: string): boolean {
+        return this.supportChats.some( c => c.roomId === roomId);
+    }
 
 }

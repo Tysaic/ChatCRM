@@ -1,0 +1,16 @@
+<div class="tabs-container">
+  <button
+    *ngFor="let tab of tabs"
+    [class.active]="isActive(tab.id)"
+    [class.has-notification]="tab.unreadCount > 0 && !isActive(tab.id)"
+    (click)="selectTab(tab.id)"
+    [attr.aria-selected]="isActive(tab.id)"
+    role="tab">
+
+    {{ tab.label }}
+
+    <span *ngIf="tab.unreadCount > 0" class="badge">
+      {{ tab.unreadCount > 99 ? '99+' : tab.unreadCount }}
+    </span>
+  </button>
+</div>

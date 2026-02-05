@@ -123,7 +123,11 @@
                     <!-- Start chat-message-list -->
                     <div class="">
                         <div class="d-flex justify-content-between align-items-center mb-3 px-3">
-                            <h5 class="mb-0 font-size-16">Recientes</h5>
+                            <app-chat-tabs
+                            [supportUnread] = 'supportUnreadCount'
+                            [adminUnread] = 'totalUnreadCount'
+                            (tabChanged)="onTabChange($event)">
+                            </app-chat-tabs>
                             
                             <!-- Filtro de no leidos -->
                             <button
@@ -155,102 +159,137 @@
                         }
                         
                         <div class="chat-message-list px-2" data-simplebar>
-                            <ul class="list-unstyled chat-list chat-user-list">
+                            
+                            <!-- Lista de chats - Mostrar según pestaña activa -->
 
-                                <!-- Indicador de carga inicial -->
-                                @if (loadingChats) {
-                                    <li class="text-center py-4">
-                                        <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                            <span class="visually-hidden">Cargando...</span>
-                                        </div>
-                                        <small class="text-muted ms-2">Cargando chats...</small>
-                                    </li>
-                                }
+                            <!-- Chats Administrativos (pestaña internal) -->
+                            @if (activeTab === 'internal') {
+                                <ul class="list-unstyled chat-list chat-user-list">
 
-                                <!-- Lista de chats -->
-                                @for (chat of filteredChats; track chat.roomId) {
-                                    <li [class.active]="selectedChat?.roomId === chat.roomId"
-                                        [class.unread]="chat.unread_count > 0"
-                                        (click)="selectChat(chat)">
-                                        <a href="javascript:void(0);">
-                                            <div class="d-flex">
-                                                <div class="chat-user-img online align-self-center me-3 ms-0">
-                                                    @if (getChatDisplayImage(chat)){
-                                                        <img [src]="getChatDisplayImage(chat)" class="rounded-circle avatar-xs" alt="">
-                                                    } @else {
-                                                        <div class="avatar-xs">
-                                                            <span class="avatar-title rounded-circle bg-primary-subtle text-primary">
-                                                                {{ getChatDisplayName(chat).charAt(0).toUpperCase() }}
-                                                            </span>
-                                                        </div>
-                                                    }
-                                                    <span class="user-status"></span>
-                                                </div>
-
-                                                <div class="flex-grow-1 overflow-hidden">
-                                                    <h4 class="text-truncate font-size-15 mb-0">{{ getChatDisplayName(chat) }}</h4>
-                                                </div>
-
-                                                <div class="chat-meta text-end">
-                                                    <!-- Timestamp del ultimo mensaje -->
-                                                    @if (chat.lastMessageAt) {
-                                                        <p class="text-muted font-size-11 mb-1">
-                                                            {{ chat.lastMessageAt | date:'HH:mm' }}
-                                                        </p>
-                                                    }
-
-                                                    <!-- Badge con contador de no leidos -->
-                                                    @if (chat.unread_count > 0) {
-                                                        <span class="badge bg-danger rounded-pill">
-                                                            {{ chat.unread_count > 99 ? '99+' : chat.unread_count }}
-                                                        </span>
-                                                    }
-                                                </div>
-                                            </div>
-                                        </a>
-                                    </li>
-                                }
-
-                                <!-- Botón cargar más chats -->
-                                @if (hasMoreChats && !loadingChats && filteredChats.length > 0) {
-                                    <li class="text-center py-3 border-top">
-                                        @if (loadingMoreChats) {
+                                    <!-- Indicador de carga inicial -->
+                                    @if (loadingChats) {
+                                        <li class="text-center py-4">
                                             <div class="spinner-border spinner-border-sm text-primary" role="status">
                                                 <span class="visually-hidden">Cargando...</span>
                                             </div>
-                                            <small class="text-muted ms-2">Cargando más chats...</small>
-                                        } @else {
-                                            <button
-                                                class="btn btn-link btn-sm text-primary"
-                                                (click)="loadMoreChats()">
-                                                <i class="ri-arrow-down-line me-1"></i>
-                                                Cargar más chats ({{ totalChats - chats.length }} restantes)
+                                            <small class="text-muted ms-2">Cargando chats...</small>
+                                        </li>
+                                    }
+
+                                    <!-- Lista de chats -->
+                                    @for (chat of filteredChats; track chat.roomId) {
+                                        <li [class.active]="selectedChat?.roomId === chat.roomId"
+                                            [class.unread]="chat.unread_count > 0"
+                                            (click)="selectChat(chat)">
+                                            <a href="javascript:void(0);">
+                                                <div class="d-flex">
+                                                    <div class="chat-user-img online align-self-center me-3 ms-0">
+                                                        @if (getChatDisplayImage(chat)){
+                                                            <img [src]="getChatDisplayImage(chat)" class="rounded-circle avatar-xs" alt="">
+                                                        } @else {
+                                                            <div class="avatar-xs">
+                                                                <span class="avatar-title rounded-circle bg-primary-subtle text-primary">
+                                                                    {{ getChatDisplayName(chat).charAt(0).toUpperCase() }}
+                                                                </span>
+                                                            </div>
+                                                        }
+                                                        <span class="user-status"></span>
+                                                    </div>
+
+                                                    <div class="flex-grow-1 overflow-hidden">
+                                                        <h4 class="text-truncate font-size-15 mb-0">{{ getChatDisplayName(chat) }}</h4>
+                                                    </div>
+
+                                                    <div class="chat-meta text-end">
+                                                        <!-- Timestamp del ultimo mensaje -->
+                                                        @if (chat.lastMessageAt) {
+                                                            <p class="text-muted font-size-11 mb-1">
+                                                                {{ chat.lastMessageAt | date:'HH:mm' }}
+                                                            </p>
+                                                        }
+
+                                                        <!-- Badge con contador de no leidos -->
+                                                        @if (chat.unread_count > 0) {
+                                                            <span class="badge bg-danger rounded-pill">
+                                                                {{ chat.unread_count > 99 ? '99+' : chat.unread_count }}
+                                                            </span>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </li>
+                                    }
+
+                                    <!-- Botón cargar más chats -->
+                                    @if (hasMoreChats && !loadingChats && filteredChats.length > 0) {
+                                        <li class="text-center py-3 border-top">
+                                            @if (loadingMoreChats) {
+                                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                    <span class="visually-hidden">Cargando...</span>
+                                                </div>
+                                                <small class="text-muted ms-2">Cargando más chats...</small>
+                                            } @else {
+                                                <button
+                                                    class="btn btn-link btn-sm text-primary"
+                                                    (click)="loadMoreChats()">
+                                                    <i class="ri-arrow-down-line me-1"></i>
+                                                    Cargar más chats ({{ totalChats - chats.length }} restantes)
+                                                </button>
+                                            }
+                                        </li>
+                                    }
+
+                                    <!-- Indicador fin de lista -->
+                                    @if (!hasMoreChats && chats.length > 0 && !loadingChats) {
+                                        <li class="text-center py-2">
+                                            <small class="text-muted">
+                                                <i class="ri-chat-check-line me-1"></i>
+                                                Mostrando todos los chats ({{ chats.length }})
+                                            </small>
+                                        </li>
+                                    }
+
+                                    <!-- Sin chats -->
+                                    @if (!loadingChats && chats.length === 0) {
+                                        <li class="text-center py-4 text-muted">
+                                            <i class="ri-chat-off-line font-size-24 d-block mb-2"></i>
+                                            <p class="mb-0">No tienes conversaciones</p>
+                                            <button class="btn btn-primary btn-sm mt-2" (click)="openAddChatModal()">
+                                                <i class="ri-add-line me-1"></i>Iniciar chat
                                             </button>
-                                        }
-                                    </li>
-                                }
+                                        </li>
+                                    }
+                                </ul>
+                            }
 
-                                <!-- Indicador fin de lista -->
-                                @if (!hasMoreChats && chats.length > 0 && !loadingChats) {
-                                    <li class="text-center py-2">
-                                        <small class="text-muted">
-                                            <i class="ri-chat-check-line me-1"></i>
-                                            Mostrando todos los chats ({{ chats.length }})
-                                        </small>
-                                    </li>
-                                }
+                            <!-- Chats de Soporte (pestaña support) -->
+                            @if (activeTab === 'support') {
+                                <ul class="list-unstyled chat-list chat-user-list">
+                                    @if (loadingSupportChats) {
+                                        <li class="text-center py-4">
+                                            <div class="spinner-border spinner-border-sm text-primary"></div>
+                                            <small class="text-muted ms-2">Cargando chats de soporte...</small>
+                                        </li>
+                                    }
 
-                                <!-- Sin chats -->
-                                @if (!loadingChats && chats.length === 0) {
-                                    <li class="text-center py-4 text-muted">
-                                        <i class="ri-chat-off-line font-size-24 d-block mb-2"></i>
-                                        <p class="mb-0">No tienes conversaciones</p>
-                                        <button class="btn btn-primary btn-sm mt-2" (click)="openAddChatModal()">
-                                            <i class="ri-add-line me-1"></i>Iniciar chat
-                                        </button>
-                                    </li>
-                                }
-                            </ul>
+                                    @for (chat of filteredSupportChats; track chat.roomId) {
+                                        <app-support-chat-item
+                                            [chat]="chat"
+                                            [isSelected]="selectedChat?.roomId === chat.roomId"
+                                            (select)="selectChat(chat)"
+                                            (take)="onTakeChat(chat.roomId)"
+                                            (release)="onReleaseChat(chat.roomId)">
+                                        </app-support-chat-item>
+                                    }
+
+                                    @if (!loadingSupportChats && filteredSupportChats.length === 0) {
+                                        <li class="text-center py-4 text-muted">
+                                            <i class="ri-customer-service-2-line font-size-24 d-block mb-2"></i>
+                                            <p class="mb-0">No hay chats de soporte pendientes</p>
+                                        </li>
+                                    }
+                                </ul>
+                            }
 
                         </div>
                     </div>
