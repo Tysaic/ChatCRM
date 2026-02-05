@@ -26,13 +26,13 @@ interface ChatRoom {
     unread_count: number;
     last_message: string | null;
     lastMessageAt?: Date;
-    assigned_agent?: string;
+    assigned_agent?: number;
     assigned_agent_info?: { name: string; image?: string}
 }
 
 interface Message {
     user: string;
-    userId: string;
+    userId: number;
     message: string | null;
     timestamp: Date;
     userName: string;
@@ -65,7 +65,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
     // Usuario actual
     currentUser: any = null;
-    currentUserId: string | null = null;
+    currentUserId: number | null = null;
     // Chats y mensajes
     chats: ChatRoom[] = [];
     filteredChats: ChatRoom[] = [];
@@ -128,7 +128,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     ) {}
 
     ngOnInit(): void {
-        this.currentUserId = localStorage.getItem('userId');
+        const storedUserId = localStorage.getItem('userId');
+        this.currentUserId = storedUserId ? parseInt(storedUserId, 10) : null;
         this.loadCurrentUser();
         this.loadChats();
         this.connectWebSocket();
@@ -327,9 +328,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     }
 
     connectWebSocket(): void {
-        const userId = localStorage.getItem('userId');
+        const visitorId = localStorage.getItem('userId');
 
-        this.ws = new WebSocket(`${this.apiService.getWebSocketUrl()}/ws/user/${userId}/chat/`);
+        this.ws = new WebSocket(`${this.apiService.getWebSocketUrl()}/ws/user/${visitorId}/chat/`);
 
         this.ws.onmessage = (event) => {
             

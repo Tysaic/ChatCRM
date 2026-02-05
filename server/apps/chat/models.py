@@ -92,7 +92,7 @@ class ChatRoom(models.Model):
 
         for chat in dm_chats:
 
-            member_ids = [str(member.userId) for member in chat.member.all()]
+            member_ids = [member.id for member in chat.member.all()]
 
             if set(member_ids) == set(users_ids):
                 return chat

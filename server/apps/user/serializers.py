@@ -15,7 +15,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['userId', 'username', 'email','image', 'first_name', 'last_name']
+        fields = ['id', 'username', 'email', 'image', 'first_name', 'last_name']
 
 class LoginSerializer(TokenObtainPairSerializer):
     
@@ -58,7 +58,7 @@ class LoginSerializer(TokenObtainPairSerializer):
         return {
             'refresh': str(refresh),
             'access': str(refresh.access_token),
-            'userId': user.userId,
+            'userId': user.id,
         }
 
     @classmethod
@@ -66,7 +66,7 @@ class LoginSerializer(TokenObtainPairSerializer):
         token = super().get_token(user)
         #del token['user_id']
         token['username'] = user.username
-        token['userId'] = user.userId
+        token['userId'] = user.id
         return token
 
 class SignupSerializer(serializers.ModelSerializer):
@@ -126,7 +126,7 @@ class SignupSerializer(serializers.ModelSerializer):
 
         return {
             'id': instance.id,
-            'userId': instance.userId,
+            'userId': instance.id,
             'message': 'User registered successfully'
         }
 
@@ -268,7 +268,7 @@ class GuestAuthSerializer(serializers.Serializer):
     def generate_tokens(self, user):
 
         refresh = RefreshToken.for_user(user)
-        refresh['userId'] = str(user.userId)
+        refresh['userId'] = str(user.id)
         refresh['user_type'] = user.get_type_code()
 
         return {
@@ -294,12 +294,12 @@ class GuestAuthSerializer(serializers.Serializer):
 
         return {
             **tokens,
-            'userId': str(user.userId),
+            'userId': str(user.id),
             'user_type': user.get_type_code(),
             'is_new_user': created,
             'roomId': str(support_room.roomId),
             'user': {
-                'userId': str(user.userId),
+                'userId': str(user.id),
                 'username': user.username,
                 'email': user.email,
                 'first_name': user.first_name,

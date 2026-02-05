@@ -45,7 +45,7 @@ class ChatRoomSerializer(serializers.ModelSerializer):
 
         memberUserIds = validatedData.pop('members')
         chat_room = ChatRoom.objects.create(**validatedData)
-        users = User.objects.filter(userId__in=memberUserIds)
+        users = User.objects.filter(id__in=memberUserIds)
         chat_room.member.set(users)
 
         for user in users:
@@ -117,7 +117,7 @@ class ChatMessageSerializer(serializers.ModelSerializer):
     def get_userId(self, obj):
 
         if obj.user:
-            return obj.user.userId
+            return obj.user.id
         return None
 
     def validate_roomId(self, value):

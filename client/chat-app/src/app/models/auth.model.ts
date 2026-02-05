@@ -6,7 +6,7 @@ export interface LoginRequest {
 export interface LoginResponse {
     refresh: string;
     access: string;
-    userId: string;
+    userId: number;
 }
 
 export interface SignUpRequest {
@@ -21,6 +21,6 @@ export interface SignUpRequest {
 
 export interface SignUpResponse {
     id: number;
-    userId: string;
+    userId: number;
     message: string;
 }

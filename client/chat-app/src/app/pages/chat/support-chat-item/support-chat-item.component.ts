@@ -7,7 +7,7 @@ interface SupportChat {
     type: string;
     member: any[];
     last_message: string | null;
-    assigned_agent?: string;
+    assigned_agent?: number;
     assigned_agent_info?: { name: string; image?: string };
     guest_user?: { image?: string; name?: string };
 }
@@ -50,10 +50,10 @@ export class SupportChatItemComponent {
         this.release.emit(this.chat.roomId);
     }
 
-    @Input() currentUserId: string = '';
+    @Input() currentUserId: number | null = null;
 
     get isAssignedToCurrentAgent(): boolean {
-        return String(this.chat.assigned_agent) === String(this.currentUserId);
+        return this.chat.assigned_agent === this.currentUserId;
     }
 
     get canTake(): boolean {

@@ -9,12 +9,12 @@ from .models import (
 class CustomUserAdmin(BaseUserAdmin):
 
     list_display = (
-        'username', 'email', 'userId', 
+        'id', 'username', 'email',
         'first_name', 'last_name', 'is_staff'
     )
 
     search_fields = (
-        'username', 'userId', 'email',
+        'username', 'id', 'email',
         'first_name', 'last_name'
     )
 
@@ -24,11 +24,9 @@ class CustomUserAdmin(BaseUserAdmin):
 
     fieldsets = BaseUserAdmin.fieldsets + (
         ('Extra Info', {
-            'fields': ('userId', 'image', 'user_type'),
+            'fields': ('image', 'user_type'),
         }),
     )
-
-    readonly_fields = ('userId', )
 
 @admin.register(UserType)
 class UserTypeAdmin(admin.ModelAdmin):
@@ -74,8 +72,8 @@ class ApiKeyAdmin(admin.ModelAdmin):
 class OnlineUserAdmin(admin.ModelAdmin):
 
     list_display = ('user', 'get_user_id', 'user__email')
-    search_fields = ('user__username', 'user__userId', 'user__email')
+    search_fields = ('user__username', 'user__id', 'user__email')
 
     @admin.display(description="User ID")
     def get_user_id(self, obj):
-        return obj.user.userId
+        return obj.user.id

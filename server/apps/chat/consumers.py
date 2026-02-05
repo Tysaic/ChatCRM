@@ -8,8 +8,8 @@ import json
 class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
-    def getUser(self, userId):
-        return User.objects.get(userId=userId)
+    def getUser(self, id):
+        return User.objects.get(id=id)
     
     @database_sync_to_async
     def getOnlineUsers(self):
@@ -39,15 +39,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def getRoomMembers(self, roomId):
         try:
             room = ChatRoom.objects.get(roomId = roomId)
-            return [member.userId for member in room.member.all()]
+            return [member.id for member in room.member.all()]
         
         except ChatRoom.DoesNotExist:
             return []
     
     @database_sync_to_async
-    def saveMessage(self, message, userId, roomId, image=None):
+    def saveMessage(self, message, id, roomId, image=None):
 
-        userObj = User.objects.get(userId=userId)
+        userObj = User.objects.get(id=id)
         chatObj = ChatRoom.objects.get(roomId=roomId)
         ChatMessageObj = ChatMessage.objects.create(
             room=chatObj, user=userObj, message=message
@@ -55,7 +55,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         data = {
             'action': 'message',
             'user': userObj.id,
-            'userId': userObj.userId,
+            'userId': userObj.id,
             'roomId': roomId,
             'message': message,
             'userImage': userObj.image.url if userObj.image else None,
@@ -79,26 +79,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_send('onlineUser', chatMessage)
     
     async def connect(self):
-        self.userId = self.scope['url_route']['kwargs']['userId']
+        self.visitorId = self.scope['url_route']['kwargs']['visitorId']
 
-        if not self.userId or self.userId in ('null', 'undefined', 'None', ''):
+        if not self.visitorId or self.visitorId in ('null', 'undefined', 'None', ''):
             await self.close()
             return
-        
+
         try:
-            self.user = await self.getUser(self.userId)
+            self.user = await self.getUser(self.visitorId)
         except User.DoesNotExist:
             await self.close()
             return
-        
+
         self.userRooms = await self.getUserRooms(self.user)
         for room in self.userRooms:
             await self.channel_layer.group_add(
                 room.roomId,
                 self.channel_name
             )
-        
-        await self.channel_layer.group_add(f'user_{self.userId}', self.channel_name)
+
+        await self.channel_layer.group_add(f'user_{self.visitorId}', self.channel_name)
         await self.channel_layer.group_add('onlineUser', self.channel_name)
         await self.addOnlineUsers(self.user)
         await self.sendOnlineUserList()
@@ -120,7 +120,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 self.channel_name
             )
         
-        await self.channel_layer.group_discard(f'user_{self.userId}', self.channel_name)
+        await self.channel_layer.group_discard(f'user_{self.visitorId}', self.channel_name)
     
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)

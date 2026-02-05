@@ -46,7 +46,7 @@ class ChatRoomCreateView(APIView):
     def post(self, request):
 
         data = request.data.copy()
-        current_userId = User.objects.get(id=request.user.id).userId
+        current_userId = request.user.id
 
         members = data.get('members', [])
         chat_type = data.get('type', 'DM')
@@ -178,12 +178,12 @@ class MessagesView(ListAPIView):
 
         for member in members:
             async_to_sync(channel_layer.group_send)(
-                f"user_{member.userId}",
+                f"user_{member.id}",
                 {
                     'type': 'chat_message',
                     'message': {
                     'action': 'message',
-                    'userId': user_instance.userId,
+                    'userId': user_instance.id,
                     'chatType': chatroom.type,
                     'roomId': roomId,
                     'message': message.message,
@@ -345,7 +345,7 @@ class UploadChatFileView(APIView):
             "messageId": chat_message.id,
             "roomId": chatroom.roomId,
             "message": message if message else None,
-            "userId": user.userId,
+            "userId": user.id,
             "userName": f"{user.first_name} {user.last_name}",
             "userImage": request.build_absolute_uri(user.image.url) if user.image else None,
             "timestamp": str(chat_message.timestamp),

@@ -1,7 +1,6 @@
 from django.db import models
 from django.db.models import Count
 from django.contrib.auth.models import AbstractUser
-from shortuuidfield import ShortUUIDField
 from django.utils import timezone
 import secrets
 import hashlib
@@ -48,7 +47,6 @@ class UserType(models.Model):
 
 
 class User(AbstractUser):
-    userId = ShortUUIDField()
     image = models.ImageField(upload_to="user", null=True, blank=True)
 
     user_type = models.ForeignKey(

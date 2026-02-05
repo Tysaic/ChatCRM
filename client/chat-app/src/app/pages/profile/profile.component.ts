@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 
 interface Profile {
-    userId: string;
+    id: number;
     username: string;
     email: string;
     first_name: string;
@@ -23,7 +23,7 @@ interface Profile {
 
 export class ProfileComponent implements OnInit {
     profile: Profile = {
-        userId: '',
+        id: 0,
         username: '',
         email: '',
         first_name: '',
