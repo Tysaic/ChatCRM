@@ -292,7 +292,14 @@ class UploadChatFileView(APIView):
         description = "Sube una imagen o documento a un chat"
     )
 
-    def post(self, request, roomId):
+    def post(self, request):
+
+        roomId = request.data.get('roomId')
+        if not roomId:
+            return Response(
+                {"error": "roomId not provided."},
+                status = status.HTTP_400_BAD_REQUEST
+            )
 
         uploaded_file = request.FILES.get('file')
         message = request.data.get('message', '')

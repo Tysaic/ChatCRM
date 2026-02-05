@@ -614,7 +614,7 @@
                         }
 
                         <!-- Lista de usuarios -->
-                        @for (user of filteredUsers; track user.userId) {
+                        @for (user of filteredUsers; track user.id) {
                             <li class="user-list-item" (click)="startChatWithUser(user)">
                                 <div class="d-flex align-items-center">
                                     <!-- Avatar -->

@@ -29,7 +29,7 @@ export class ApiService {
       tap(response => {
         localStorage.setItem('access_token', response.access);
         localStorage.setItem('refresh_token', response.refresh);
-        localStorage.setItem('userId', response.userId);
+        localStorage.setItem('userId', String(response.userId));
         this.isAuthenticated.next(true);
       })
     )

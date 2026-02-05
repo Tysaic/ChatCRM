@@ -339,9 +339,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
             if(data.action === 'message'){
                 this.ngZone.run( () => {
                     const roomId = data.roomId;
+                    const isOwnMessage = data.userId === this.currentUserId;
                     const chatExists = this.chats.some( c => c.roomId === roomId);
 
                     if(!chatExists){
+                        if(isOwnMessage) return;
                         this.apiService.getUserChats({ limit:1, offset:0 }).subscribe({
                             next: (response) => {
                                 const newChats = response.results || response;
@@ -393,23 +395,23 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
                             })
                         }
                         this.shouldScrollToBottom = true;
-                        this.apiService.markChatAsRead(data.roomId).subscribe();
-                    } else{
+                        if(!isOwnMessage) {
+                            this.apiService.markChatAsRead(data.roomId).subscribe();
+                        }
+                    } else if(!isOwnMessage){
                         this.incrementUnreadCount(data.roomId);
                     }
 
 
                     this.moveChatToTop(data.roomId);
-                });
-            }
 
-            if(data.chatType === 'SUPPORT' || this.isSupportChat(data.roomId)){
-                if(this.activeTab !== 'support') {
-                    this.supportUnreadCount++;
-                }
-                this.loadSupportChats();
-            } else{
-                this.incrementUnreadCount(data.roomId);
+                    if(!isOwnMessage && (data.chatType === 'SUPPORT' || this.isSupportChat(data.roomId))){
+                        if(this.activeTab !== 'support') {
+                            this.supportUnreadCount++;
+                        }
+                        this.loadSupportChats();
+                    }
+                });
             }
         }
 
@@ -442,7 +444,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
         this.messages.push({
             user: this.currentUser?.id || '',
-            userId: this.currentUserId || '',
+            userId: this.currentUserId || 0,
             message: messageText,
             timestamp: now,
             userName: this.currentUser ? `${this.currentUser.first_name} ${this.currentUser.last_name}` : '',
@@ -473,7 +475,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     getChatDisplayName(chat: ChatRoom): string {
 
         if(chat.type === CHAT_TYPES.DM){
-            const otherMember = chat.member.find(m => m.userId !== this.currentUserId);
+            const otherMember = chat.member.find(m => m.id !== this.currentUserId);
             return otherMember ? `${otherMember.first_name} ${otherMember.last_name}` : 'Chat Interno';
         }
         return chat.name || 'Chat Group';
@@ -481,7 +483,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
     getChatDisplayImage(chat: ChatRoom): string  | null {
         if(chat.type === CHAT_TYPES.DM){
-            const otherMember = chat.member.find(m => m.userId !== this.currentUserId);
+            const otherMember = chat.member.find(m => m.id !== this.currentUserId);
             return otherMember?.image || null;
         }
 
@@ -556,9 +558,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
                 this.totalUsers = response.count || newUsers.length;
 
                 if (loadMore){
-                    const existingIds = new Set(this.allUsers.map( u => u.userId));
+                    const existingIds = new Set(this.allUsers.map( u => u.id));
                     const uniqueUsers = newUsers.filter(
-                        (u: any) => !existingIds.has(u.userId)
+                        (u: any) => !existingIds.has(u.id)
                     );
                     this.allUsers = [...this.allUsers, ...uniqueUsers];
                 } else {
@@ -625,10 +627,10 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
                 if(loadMore){
                     const existingIds = new Set(
-                        this.filteredUsers.map( u=> u.userId )
+                        this.filteredUsers.map( u=> u.id )
                     );
                     const uniqueUsers = newUsers.filter(
-                        (u: any) => !existingIds.has(u.userId)
+                        (u: any) => !existingIds.has(u.id)
                     );
                     this.filteredUsers = [...this.filteredUsers, ...uniqueUsers];
                 } else {
@@ -693,7 +695,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
         const existingChat = this.chats.find(chat => 
             chat.type === CHAT_TYPES.DM &&
-            chat.member.some((m:any) => m.userId === user.userId)
+            chat.member.some((m:any) => m.id === user.id)
         )
 
 
@@ -703,7 +705,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
             return;
         }
 
-        this.apiService.createChat('', CHAT_TYPES.DM, [user.userId, this.currentUserId]).subscribe({
+        this.apiService.createChat('', CHAT_TYPES.DM, [user.id, this.currentUserId]).subscribe({
             next: (response:any) => {
                 const newRoomId = response.roomId || response.chat?.roomId;
 
