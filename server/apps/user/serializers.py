@@ -8,6 +8,7 @@ from apps.chat.models import ChatRoom
 from django.contrib.auth import authenticate
 from django.utils.translation import gettext_lazy as lazy
 from rest_framework_simplejwt.tokens import RefreshToken
+from apps.chat.models import ChatRoom
 import uuid
 
 class UserSerializer(serializers.ModelSerializer):
@@ -280,11 +281,23 @@ class GuestAuthSerializer(serializers.Serializer):
         user, created = self.get_or_created_guest(self.validated_data)
         tokens = self.generate_tokens(user)
 
+        support_room, room_created = ChatRoom.objects.get_or_create(
+            type = ChatRoom.ChatType.SUPPORT,
+            created_by = user,
+            defaults = {
+                'name': f"Support Room - {user.first_name} {user.last_name}"
+            }
+        )
+
+        if room_created:
+            support_room.member.add(user)
+
         return {
             **tokens,
             'userId': str(user.userId),
             'user_type': user.get_type_code(),
             'is_new_user': created,
+            'roomId': str(support_room.roomId),
             'user': {
                 'userId': str(user.userId),
                 'username': user.username,

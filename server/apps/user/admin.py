@@ -24,7 +24,7 @@ class CustomUserAdmin(BaseUserAdmin):
 
     fieldsets = BaseUserAdmin.fieldsets + (
         ('Extra Info', {
-            'fields': ('userId', 'image'),
+            'fields': ('userId', 'image', 'user_type'),
         }),
     )
 

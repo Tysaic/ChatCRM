@@ -13,8 +13,14 @@ from django.db.models import Q, Exists, OuterRef
 from django.shortcuts import get_object_or_404
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-from V0X.settings import MAX_FILE_SIZE, ALLOWED_IMAGE_TYPES
+from V0X.settings import (
+    MAX_FILE_SIZE, 
+    ALLOWED_IMAGE_TYPES, 
+    TIME_HOUR_CHAT_EXPIRED
+)
+from django.utils import timezone
 from drf_spectacular.utils import extend_schema, OpenApiParameter, inline_serializer
+from datetime import timedelta
 
 class ChatRoomPagination(LimitOffsetPagination):
 
@@ -171,6 +177,7 @@ class MessagesView(ListAPIView):
                     'message': {
                     'action': 'message',
                     'userId': user_instance.userId,
+                    'chatType': chatroom.type,
                     'roomId': room_id,
                     'message': message.message,
                     'userName': f"{user_instance.first_name} {user_instance.last_name}",
@@ -354,3 +361,88 @@ class UploadChatFileView(APIView):
             response_data["fileSize"] = chat_message.file_size
         
         return Response(response_data, status = status.HTTP_201_CREATED)
+
+class SupportChatsListView(APIView):
+
+    def get(self, request):
+
+        user = request.user
+
+        if user.is_guest():
+            return Response(
+                {'error': "Guests are not allowed to access support chats."},
+                status = status.HTTP_403_FORBIDDEN
+            )
+        
+        ChatRoom.objects.filter(
+            type = ChatRoom.ChatType.SUPPORT,
+            taken_at__lt = timezone.now() - timedelta(hours=TIME_HOUR_CHAT_EXPIRED)
+        ).update(assigned_agent=None, taken_at=None)
+
+        chats = ChatRoom.objects.filter(
+            type = ChatRoom.ChatType.SUPPORT
+        ).order_by('-updated_at')
+
+        serializer = ChatRoomSerializer(
+            chats, 
+            many=True, 
+            context={'request': request}
+        )
+
+class TakeReleaseChatView(APIView):
+
+    def post(self, request, roomId, action):
+
+        user = request.user
+
+        if user.is_guest():
+            return Response(
+                {'error': "Guests are not allowed to take or release support chats."},
+                status = status.HTTP_403_FORBIDDEN
+            )
+        
+        chat = get_object_or_404(
+            ChatRoom, 
+            roomId=roomId, 
+            type=ChatRoom.ChatType.SUPPORT
+        )
+
+        if action == 'take':
+
+            if chat.assigned_agent and chat.assigned_agent != user:
+                if chat.taken_at and chat.taken_at > timezone.now() - timedelta(hours=TIME_HOUR_CHAT_EXPIRED):
+                    return Response({
+                        "error": "This chat is already taken by another agent.",
+                    }, status = status.HTTP_409_CONFLICT)
+
+                chat.assigned_agent = user
+                chat.taken_at = timezone.now()
+
+                if not chat.member.filter(id = user.id).exists():
+                    chat.member.add(user)
+                chat.save()
+
+                return Response(
+                    {
+                        'message': "Chat taken successfully.",
+                        'roomId': roomId,
+                    },
+                    status = status.HTTP_200_OK
+                )
+        
+        elif action == 'release':
+
+            if chat.assigned_agent != user or user.is_admin():
+                chat.assigned_agent = None
+                chat.taken_at = None
+                chat.save()
+
+                return Response(
+                    {"message": "Chat released successfully.", "roomId": roomId}, 
+                    status = status.HTTP_200_OK
+                )
+            
+            return Response(
+                {"error": "You cannot release a chat you haven't taken."},
+                status = status.HTTP_403_FORBIDDEN
+            )

@@ -20,6 +20,7 @@ class ChatRoom(models.Model):
         DM = 'DM', 'Direct Message'
         GROUP = 'GROUP', 'Group Chat'
         SELF = 'SELF', 'Personal Chat'
+        SUPPORT = 'SUPPORT', 'Support Chat'
     
 
     roomId = ShortUUIDField()
@@ -38,6 +39,18 @@ class ChatRoom(models.Model):
         related_name='created_chats'
     )
     updated_at = models.DateTimeField(auto_now=True)
+
+    assigned_agent = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assigned_chats'
+    )
+    taken_at = models.DateTimeField(
+        null=True, 
+        blank=True
+    )
 
     class Meta:
         ordering = ['-updated_at']
