@@ -340,7 +340,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
                 this.ngZone.run( () => {
                     const roomId = data.roomId;
                     const isOwnMessage = data.userId === this.currentUserId;
-                    const chatExists = this.chats.some( c => c.roomId === roomId);
+                    const chatExists = this.chats.some( c => c.roomId === roomId) || 
+                    this.supportChats.some( c => c.roomId === roomId);
 
                     if(!chatExists){
                         if(isOwnMessage) return;
@@ -690,6 +691,13 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
     get totalUnreadCount(): number {
         return this.chats.reduce((sum, chat) => sum + (chat.unread_count || 0), 0);
+    }
+
+    get isChatBlocker(): boolean {
+        if(!this.selectedChat) return false;
+        if(this.selectedChat.type !== 'SUPPORT') return false;
+        if(!this.selectedChat.assigned_agent) return false;
+        return this.selectedChat.assigned_agent !== this.currentUserId;
     }
     startChatWithUser(user: any): void {
 
