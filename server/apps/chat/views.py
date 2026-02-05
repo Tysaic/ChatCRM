@@ -242,6 +242,13 @@ class MarkChatAsReadView(APIView):
                 status = status.HTTP_403_FORBIDDEN
             )
         
+        if chatroom.type == ChatRoom.ChatType.SUPPORT:
+            if chatroom.assigned_agent and chatroom.assigned_agent != user:
+                return Response(
+                    {'error': "This support chat is assigned to another agent."},
+                    status = status.HTTP_403_FORBIDDEN
+                )
+        
         membership = chatroom.get_membership(user = user)
         membership.mark_as_read()
 

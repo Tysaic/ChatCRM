@@ -252,12 +252,16 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     selectChat(chat: ChatRoom): void {
         this.selectedChat = chat;
 
-        if(chat.unread_count > 0 ) {
+        if(chat.unread_count > 0 && !this.isChatBlocker) {
             this.apiService.markChatAsRead(chat.roomId).subscribe({
                 next: () => {
                     const chatIndex = this.chats.findIndex( c=> c.roomId === chat.roomId);
                     if(chatIndex !== -1){
                         this.chats[chatIndex].unread_count = 0;
+                    }
+                    const supportIndex = this.supportChats.findIndex( c=> c.roomId === chat.roomId);
+                    if(supportIndex !== -1){
+                        this.supportChats[supportIndex].unread_count = 0;
                     }
                 },
                 error: (err) =>  console.error("Error marking chat as read: ", err)
@@ -396,7 +400,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
                             })
                         }
                         this.shouldScrollToBottom = true;
-                        if(!isOwnMessage) {
+                        if(!isOwnMessage && !this.isChatBlocker) {
                             this.apiService.markChatAsRead(data.roomId).subscribe();
                         }
                     } else if(!isOwnMessage){

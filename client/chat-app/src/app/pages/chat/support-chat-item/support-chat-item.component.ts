@@ -7,6 +7,7 @@ interface SupportChat {
     type: string;
     member: any[];
     last_message: string | null;
+    unread_count: number;
     assigned_agent?: number;
     assigned_agent_info?: { name: string; image?: string };
     guest_user?: { image?: string; name?: string };

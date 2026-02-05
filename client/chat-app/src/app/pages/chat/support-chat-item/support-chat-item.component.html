@@ -36,11 +36,22 @@
 
             <!-- Acciones -->
             <div class="chat-meta text-end align-self-center">
+                @if (chat.unread_count > 0) {
+                    <span class="badge bg-danger rounded-pill mb-1">
+                        {{ chat.unread_count > 99 ? '99+' : chat.unread_count }}
+                    </span>
+                }
                 @if (canTake) {
                     <button
                         class="btn btn-sm btn-primary"
                         (click)="onTake($event)">
                         Tomar
+                    </button>
+                } @else if (isAssignedToCurrentAgent) {
+                    <button
+                        class="btn btn-sm btn-outline-danger"
+                        (click)="onRelease($event)">
+                        Liberar
                     </button>
                 }
             </div>
