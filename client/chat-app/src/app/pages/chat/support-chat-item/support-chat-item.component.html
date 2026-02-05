@@ -27,24 +27,20 @@
                 <!-- Estado -->
                 @if (!isTaken) {
                     <span class="badge bg-warning text-dark font-size-10">Pendiente</span>
+                } @else if (isAssignedToCurrentAgent) {
+                    <span class="badge bg-success font-size-10">Atendido por ti</span>
                 } @else {
-                    <span class="badge bg-success font-size-10">{{ agentName }}</span>
+                    <span class="badge bg-danger font-size-10">Bloqueado - {{ agentName }}</span>
                 }
             </div>
 
             <!-- Acciones -->
             <div class="chat-meta text-end align-self-center">
-                @if (!isTaken) {
-                    <button 
+                @if (canTake) {
+                    <button
                         class="btn btn-sm btn-primary"
                         (click)="onTake($event)">
                         Tomar
-                    </button>
-                } @else {
-                    <button 
-                        class="btn btn-sm btn-outline-danger"
-                        (click)="onRelease($event)">
-                        Liberar
                     </button>
                 }
             </div>

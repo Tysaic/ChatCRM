@@ -285,7 +285,7 @@ class GuestAuthSerializer(serializers.Serializer):
             type = ChatRoom.ChatType.SUPPORT,
             created_by = user,
             defaults = {
-                'name': f"Support Room - {user.first_name} {user.last_name}"
+                'name': f"{user.first_name} {user.last_name}"
             }
         )
 

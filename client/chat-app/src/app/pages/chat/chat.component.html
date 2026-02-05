@@ -261,7 +261,7 @@
                                     }
                                 </ul>
                             }
-
+                            
                             <!-- Chats de Soporte (pestaña support) -->
                             @if (activeTab === 'support') {
                                 <ul class="list-unstyled chat-list chat-user-list">
@@ -276,6 +276,7 @@
                                         <app-support-chat-item
                                             [chat]="chat"
                                             [isSelected]="selectedChat?.roomId === chat.roomId"
+                                            [currentUserId]="currentUserId"
                                             (select)="selectChat(chat)"
                                             (take)="onTakeChat(chat.roomId)"
                                             (release)="onReleaseChat(chat.roomId)">
@@ -338,6 +339,18 @@
                             </div>
                             <div class="col-sm-8 col-4">
                                 <ul class="list-inline user-chat-nav text-end mb-0">
+                                    <!-- Botón Liberar - solo para chats de soporte asignados al usuario -->
+                                    @if (selectedChat?.type === 'SUPPORT' && selectedChat?.assigned_agent === currentUserId) {
+                                        <li class="list-inline-item">
+                                            <button
+                                                class="btn btn-sm btn-outline-danger"
+                                                (click)="onReleaseChat(selectedChat.roomId)"
+                                                title="Liberar chat">
+                                                <i class="ri-logout-box-r-line me-1"></i>
+                                                Liberar
+                                            </button>
+                                        </li>
+                                    }
                                     <li class="list-inline-item">
                                         <div class="dropdown">
                                             <button class="btn nav-btn dropdown-toggle" type="button" data-bs-toggle="dropdown">

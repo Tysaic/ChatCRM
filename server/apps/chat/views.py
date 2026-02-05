@@ -109,6 +109,8 @@ class UserChatRoomView(ListAPIView):
 
         return ChatRoom.objects.filter(
             member = user_instance
+        ).exclude(
+            type = ChatRoom.ChatType.SUPPORT
         ).annotate(
             has_messages = Exists(has_messages)
         ).filter(
@@ -160,6 +162,14 @@ class MessagesView(ListAPIView):
                 status = status.HTTP_403_FORBIDDEN
             )
         
+        if chatroom.type == ChatRoom.ChatType.SUPPORT:
+            if chatroom.assigned_agent and chatroom.assigned_agent != user_instance:
+                if chatroom.created_by != user_instance:
+                    return Response(
+                        {"error": "This support chat is assigned to another agent."},
+                        status = status.HTTP_403_FORBIDDEN
+                    )
+
         image = request.FILES.get('image', None)
         message = serializer.save(user = user_instance, room=chatroom, image=image)
 
@@ -393,6 +403,7 @@ class TakeReleaseChatView(APIView):
                 if chat.taken_at and chat.taken_at > timezone.now() - timedelta(hours=TIME_HOUR_CHAT_EXPIRED):
                     return Response({
                         "error": "This chat is already taken by another agent.",
+                        "assigned_to": f"{chat.assigned_agent.first_name} {chat.assigned_agent.last_name}"
                     }, status = status.HTTP_409_CONFLICT)
 
             chat.assigned_agent = user

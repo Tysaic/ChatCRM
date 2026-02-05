@@ -50,4 +50,18 @@ export class SupportChatItemComponent {
         this.release.emit(this.chat.roomId);
     }
 
+    @Input() currentUserId: string = '';
+
+    get isAssignedToCurrentAgent(): boolean {
+        return String(this.chat.assigned_agent) === String(this.currentUserId);
+    }
+
+    get canTake(): boolean {
+        return !this.isTaken;
+    }
+
+    get canSendMessage(): boolean {
+        return !this.isTaken || this.isAssignedToCurrentAgent;
+    }
+
 }
