@@ -983,6 +983,14 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
                     lastMessageAt: chat.last_message_at ? new Date(chat.last_message_at) : new Date()
                 }));
                 this.filteredSupportChats = [...this.supportChats];
+
+                if(this.selectedChat) {
+                    const updated = this.supportChats.find(c => c.roomId === this.selectedChat!.roomId);
+                    if(updated){
+                        this.selectedChat = updated;
+                    }
+                }
+
                 this.loadingSupportChats = false;
             },
             error: (error) => {
@@ -1004,9 +1012,12 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     onTakeChat(roomId: string): void {
         this.apiService.takeSupportChat(roomId).subscribe({
             next: () => {
-                this.loadSupportChats();
                 const chat = this.supportChats.find( c => c.roomId === roomId);
-                if (chat)  this.selectChat(chat);
+                if(chat) {
+                    chat.assigned_agent = this.currentUserId ?? undefined;
+                    this.selectChat(chat);
+                }
+                this.loadSupportChats();
             },
             error: (err) => {
                 console.error('Error taking support chat:', err);
