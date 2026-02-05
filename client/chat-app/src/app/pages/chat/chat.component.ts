@@ -418,6 +418,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
                     }
                 });
             }
+            if(data.action === 'support_update'){
+                this.ngZone.run( () => {
+                    this.loadSupportChats();
+                });
+            }
         }
 
         this.ws.onclose = () => {
@@ -1030,6 +1035,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
                     this.selectChat(chat);
                 }
                 this.loadSupportChats();
+
+                this.ws?.send(JSON.stringify({
+                    action: 'support_update',
+                    roomId: roomId
+                }));
             },
             error: (err) => {
                 console.error('Error taking support chat:', err);
@@ -1042,6 +1052,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
         this.apiService.releaseSupportChat(roomId).subscribe({
             next: () => {
                 this.loadSupportChats();
+
+                this.ws?.send(JSON.stringify({
+                    action: 'support_update',
+                    roomId: roomId
+                }));
             },
             error: (err) => {
                 console.error('Error releasing support chat:', err);

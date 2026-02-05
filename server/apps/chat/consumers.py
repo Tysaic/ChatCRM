@@ -132,6 +132,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if action == "join_room":
             await self.channel_layer.group_add(roomId, self.channel_name)
             return
+        
+        if action == "support_update":
+            await self.channel_layer.group_send(
+                'onlineUser',
+                {
+                    'type': 'chat_message',
+                    'message' : {
+                        'action': 'support_update',
+                        'roomId': roomId
+                    }
+                }
+            )
 
         if action == 'message':
             message = text_data_json['message']
