@@ -21,3 +21,4 @@ server/media/chat_files
 server/media/chat_images
 server/media/chat_files/*
 server/media/chat_images/*
+server/apps/user/migrations/*

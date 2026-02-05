@@ -29,4 +29,7 @@ tmux send-keys -t "$SESSION:claude" "claude" C-m
 tmux new-window -d -t $SESSION -n codex
 tmux send-keys -t "$SESSION:codex" "codex" C-m
 
+#Console
+tmux new-window -d -t $SESSION -n features
+
 tmux attach-session -t $SESSION
