@@ -52,6 +52,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         ChatMessageObj = ChatMessage.objects.create(
             room=chatObj, user=userObj, message=message
         )
+        chatObj.save(update_fields = ['updated_at'])
         data = {
             'action': 'message',
             'user': userObj.id,

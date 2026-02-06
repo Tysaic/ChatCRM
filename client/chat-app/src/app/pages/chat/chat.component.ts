@@ -252,7 +252,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     selectChat(chat: ChatRoom): void {
         this.selectedChat = chat;
 
-        if(chat.unread_count > 0 && !this.isChatBlocker) {
+        if(chat.unread_count > 0 && !this.isChatBlocker && chat.type !== 'SUPPORT') {
             this.apiService.markChatAsRead(chat.roomId).subscribe({
                 next: () => {
                     const chatIndex = this.chats.findIndex( c=> c.roomId === chat.roomId);
@@ -349,6 +349,18 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
                     if(!chatExists){
                         if(isOwnMessage) return;
+
+                        if(data.chatType === 'SUPPORT'){
+                            this.loadSupportChats();
+                            if(this.activeTab !== 'support'){
+                                this.supportUnreadCount++;
+                            }
+                            this.ws?.send(JSON.stringify({
+                                action: "join_room",
+                                roomId: roomId
+                            }));
+                            return;
+                        }
                         this.apiService.getUserChats({ limit:1, offset:0 }).subscribe({
                             next: (response) => {
                                 const newChats = response.results || response;
@@ -400,7 +412,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
                             })
                         }
                         this.shouldScrollToBottom = true;
-                        if(!isOwnMessage && !this.isChatBlocker) {
+                        if(!isOwnMessage && !this.isChatBlocker && this.selectedChat?.type !== 'SUPPORT') {
                             this.apiService.markChatAsRead(data.roomId).subscribe();
                         }
                     } else if(!isOwnMessage){
@@ -409,6 +421,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
 
                     this.moveChatToTop(data.roomId);
+                    this.moveSupportChatToTop(data.roomId);
 
                     if(!isOwnMessage && (data.chatType === 'SUPPORT' || this.isSupportChat(data.roomId))){
                         if(this.activeTab !== 'support') {
@@ -475,6 +488,20 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
         this.shouldScrollToBottom = true;
 
         this.moveChatToTop(this.selectedChat.roomId);
+
+        if(this.selectedChat.type === 'SUPPORT' && this.selectedChat.assigned_agent === this.currentUserId){
+            this.apiService.markChatAsRead(this.selectedChat.roomId).subscribe({
+                next: () => {
+                    const chatIndex = this.supportChats.findIndex(
+                        c => c.roomId === this.selectedChat!.roomId 
+                    );
+
+                    if(chatIndex !== -1){
+                        this.supportChats[chatIndex].unread_count = 0;
+                    }
+                }
+            });
+        }
     }
 
     logout(): void {
@@ -705,9 +732,10 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
     get isChatBlocker(): boolean {
         if(!this.selectedChat) return false;
         if(this.selectedChat.type !== 'SUPPORT') return false;
-        if(!this.selectedChat.assigned_agent) return false;
+        if(!this.selectedChat.assigned_agent) return true;
         return this.selectedChat.assigned_agent !== this.currentUserId;
     }
+
     startChatWithUser(user: any): void {
 
         const existingChat = this.chats.find(chat => 
@@ -857,6 +885,21 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
                 this.cancelFileSelection();
                 this.newMessage = '';
 
+
+                if(this.selectedChat?.type === 'SUPPORT' && this.selectedChat?.assigned_agent === this.currentUserId){
+                    this.apiService.markChatAsRead(this.selectedChat.roomId).subscribe({
+                        next: () => {
+                            const chatIndex = this.supportChats.findIndex(
+                                c => c.roomId === this.selectedChat!.roomId 
+                            );
+
+                            if(chatIndex !== -1){
+                                this.supportChats[chatIndex].unread_count = 0;
+                            }
+                    }
+            });
+        }
+
             },
             error: (err) =>{
                 console.log("Error uploading image: ", err);
@@ -881,6 +924,16 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked
             const [chat] = this.chats.splice(chatIndex, 1);
             this.chats.unshift(chat);
             this.filteredChats = [...this.chats];
+        }
+    }
+
+    moveSupportChatToTop(roomId: string): void {
+        const chatIndex = this.supportChats.findIndex( c=> c.roomId === roomId);
+
+        if(chatIndex > 0){
+            const [chat] = this.supportChats.splice(chatIndex, 1);
+            this.supportChats.unshift(chat);
+            this.filteredSupportChats = [...this.supportChats];
         }
     }
 

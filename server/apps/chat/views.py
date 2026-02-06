@@ -172,7 +172,8 @@ class MessagesView(ListAPIView):
 
         image = request.FILES.get('image', None)
         message = serializer.save(user = user_instance, room=chatroom, image=image)
-
+        chatroom.save(update_fields = ['updated_at'])
+        
         channel_layer = get_channel_layer()
         members = chatroom.member.all()
 
