@@ -35,7 +35,7 @@ export class ApiService {
     )
   }
 
-  signup(userData: SignUpRequest): Observable<SignUpResponse> {
+  /*signup(userData: SignUpRequest): Observable<SignUpResponse> {
     if(!userData.image){
       return this.http.post<SignUpResponse>(`${this.apiUrl}/v1/signup`, userData);
     }
@@ -50,7 +50,7 @@ export class ApiService {
     formData.append('image', userData.image);
 
     return this.http.post<SignUpResponse>(`${this.apiUrl}/v1/signup`, formData);
-  }
+  }*/
 
   logout(): void {
     localStorage.removeItem('access_token');

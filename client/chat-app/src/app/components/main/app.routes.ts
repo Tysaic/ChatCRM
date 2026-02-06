@@ -13,12 +13,12 @@ export const routes: Routes = [
         .then(m => m.LoginComponent),
         canActivate: [guestGuard]
     },
-    {
+    /*{
         path: 'signup',
         loadComponent: () => import('../../pages/signup/signup.component')
         .then(m => m.SignUpComponent),
         canActivate: [guestGuard]
-    },
+    },*/
     {
         path: 'chat',
         loadComponent: () => import('../../pages/chat/chat.component')

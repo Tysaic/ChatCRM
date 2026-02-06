@@ -340,7 +340,7 @@
                             <div class="col-sm-8 col-4">
                                 <ul class="list-inline user-chat-nav text-end mb-0">
                                     <!-- Botón Liberar - solo para chats de soporte asignados al usuario -->
-                                    @if (selectedChat?.type === 'SUPPORT' && selectedChat?.assigned_agent === currentUserId) {
+                                    @if (selectedChat.type === 'SUPPORT' && selectedChat.assigned_agent === currentUserId) {
                                         <li class="list-inline-item">
                                             <button
                                                 class="btn btn-sm btn-outline-danger"

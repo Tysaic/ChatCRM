@@ -11,10 +11,12 @@ tmux new-session -d -s $SESSION
 tmux send-keys -t $SESSION "cd $PROJECT_ROOT/client/chat-app " C-m
 tmux send-keys -t $SESSION "npm start" C-m
 
-# Backend Django + Daphne
+# Backend Django + Daphne Or Uvicorn
 tmux split-window -h -t $SESSION
 tmux send-keys -t $SESSION "source $ACTIVATE_ENV && cd server" C-m
-tmux send-keys -t $SESSION "daphne -b 0.0.0.0 -p 8000 V0X.asgi:application" C-m
+#tmux send-keys -t $SESSION "daphne -b 0.0.0.0 -p 8000 V0X.asgi:application" C-m
+tmux send-keys -t $SESSION "uvicorn V0X.asgi:application --host 0.0.0.0 --port 8000" C-m
+
 
 # Django Admin server
 tmux split-window -v -t $SESSION
